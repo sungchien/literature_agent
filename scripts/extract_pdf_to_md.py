@@ -11,6 +11,14 @@ import re
 import sys
 from pathlib import Path
 
+# 設定 Windows 終端輸出編碼
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+
 # 定義工作區目錄常數
 RAW_PDF_DIR = Path("01_papers/raw_pdf")
 EXTRACTED_TEXT_DIR = Path("01_papers/extracted_text")
@@ -54,7 +62,7 @@ def convert_all_pdfs():
     try:
         import fitz  # PyMuPDF
     except ImportError:
-        print("❌ 未檢測到 PyMuPDF 套件，請先執行：pip install PyMuPDF pymupdf4llm")
+        print("[錯誤] 未檢測到 PyMuPDF 套件，請先執行：pip install PyMuPDF pymupdf4llm")
         return
 
     # 確保輸出目錄存在
@@ -62,10 +70,10 @@ def convert_all_pdfs():
     pdf_files = list(RAW_PDF_DIR.glob("*.pdf"))
 
     if not pdf_files:
-        print(f"⚠️ 在 {RAW_PDF_DIR} 找不到任何 PDF 檔案，請先執行下載腳本。")
+        print(f"[警告] 在 {RAW_PDF_DIR} 找不到任何 PDF 檔案，請先執行下載腳本。")
         return
 
-    print(f"🚀 開始批次轉譯學術文獻（共 {len(pdf_files)} 篇）...\n")
+    print(f"[進度] 開始批次轉譯學術文獻（共 {len(pdf_files)} 篇）...\n")
 
     for idx, pdf_path in enumerate(pdf_files, 1):
         target_md_path = EXTRACTED_TEXT_DIR / f"{pdf_path.stem}.md"
@@ -91,9 +99,9 @@ def convert_all_pdfs():
             f.write(cleaned_md)
 
         file_size_kb = target_md_path.stat().st_size / 1024
-        print(f"   ✨ 轉譯成功！輸出檔案：{target_md_path.name} ({file_size_kb:.1f} KB)")
+        print(f"   [成功] 轉譯成功！輸出檔案：{target_md_path.name} ({file_size_kb:.1f} KB)")
 
-    print(f"\n🎉 全數轉譯完成！所有乾淨文字檔已妥善存放於：{EXTRACTED_TEXT_DIR}")
+    print(f"\n[完成] 全數轉譯完成！所有乾淨文字檔已妥善存放於：{EXTRACTED_TEXT_DIR}")
 
 if __name__ == "__main__":
     convert_all_pdfs()

@@ -15,6 +15,14 @@ import re
 from pathlib import Path
 from typing import List, Dict, Any
 
+# 設定 Windows 終端輸出編碼
+if sys.stdout.encoding != 'utf-8':
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+
+
 # 定義工作區目錄常數
 EXTRACTED_DIR = Path("01_papers/extracted_text")
 INDEX_FILE = Path("01_papers/vector_index.json")

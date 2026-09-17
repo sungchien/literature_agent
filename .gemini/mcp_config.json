@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "literature-workflow": {
+      "command": "python",
+      "args": [
+        "scripts/literature_workflow_mcp.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}

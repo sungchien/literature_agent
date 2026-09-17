@@ -8,7 +8,7 @@ def convert_pdf_to_md(pdf_path):
     try:
         import fitz  # PyMuPDF 套件
     except ImportError:
-        print("❌ 未檢測到 PyMuPDF 套件，請先執行命令安裝：pip install PyMuPDF")
+        print("[錯誤] 未檢測到 PyMuPDF 套件，請先執行命令安裝：pip install PyMuPDF")
         return None
 
     # 優先嘗試使用 pymupdf4llm 轉 Markdown (若有安裝)，否則使用內建 fitz get_text
@@ -56,12 +56,12 @@ def search_and_convert_weekly_pdf(week_input, folder_path="."):
     # 比對發現有對應檔案
     for pdf_file in matched_files:
         pdf_path = os.path.join(folder_path, pdf_file)
-        print(f"✅ 發現當週講義檔名：{pdf_file}")
+        print(f"[發現] 發現當週講義檔名：{pdf_file}")
         print("正在使用 PyMuPDF 轉換為 Markdown 格式...")
         
         md_result = convert_pdf_to_md(pdf_path)
         if md_result:
-            print(f"✨ 轉換成功！已儲存至：{md_result}")
+            print(f"[成功] 轉換成功！已儲存至：{md_result}")
 
 def main():
     print("========================================")
