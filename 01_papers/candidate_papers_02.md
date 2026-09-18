@@ -8,9 +8,9 @@ search_info:
   end_year: 2025
 review_stats:
   total: 3
-  included: 0
-  excluded: 0
-  pending: 3
+  included: 2
+  excluded: 1
+  pending: 0
 ---
 # 候選文獻評估與品質篩選清單：candidate_papers_02.md
 
@@ -32,11 +32,11 @@ review_stats:
 > 3. 持續追蹤：`python scripts/fetch_openalex.py track 02`
 
 ---
-## 1. [ ] Embracing the future of Artificial Intelligence in the classroom: the relevance of AI literacy, prompt engineering, and critical thinking in modern education
+## 1. [+] Embracing the future of Artificial Intelligence in the classroom: the relevance of AI literacy, prompt engineering, and critical thinking in modern education
 
 - **發表來源 (Source)**：`International Journal of Educational Technology in Higher Education`
 - **作者與年份**：Walter (2024) | **被引用數**：1043 次
-- **審查狀態**：`[ ]` 保留待定 (Pending)
+- **審查狀態**：`[+]` 採納納入 (Included)
 - **全文狀態**：[開放取用] Open Access 直連
 - **DOI 直連**：https://doi.org/10.1186/s41239-024-00448-3
 - **摘要 (Abstract)**：
@@ -44,11 +44,11 @@ review_stats:
 
 ---
 
-## 2. [ ] The Electronic Journal of e-Learning
+## 2. [-] The Electronic Journal of e-Learning
 
 - **發表來源 (Source)**：`The Electronic Journal of e-Learning`
 - **作者與年份**：Author (2023) | **被引用數**：765 次
-- **審查狀態**：`[ ]` 保留待定 (Pending)
+- **審查狀態**：`[-]` 刪除排除 (Excluded)
 - **全文狀態**：[開放取用] Open Access 直連
 - **DOI 直連**：https://doi.org/10.34190/ejel.
 - **摘要 (Abstract)**：
@@ -56,11 +56,11 @@ review_stats:
 
 ---
 
-## 3. [ ] The role of ChatGPT in higher education: Benefits, challenges, and future research directions
+## 3. [+] The role of ChatGPT in higher education: Benefits, challenges, and future research directions
 
 - **發表來源 (Source)**：`Journal of Applied Learning & Teaching`
 - **作者與年份**：Rasul (2023) | **被引用數**：553 次
-- **審查狀態**：`[ ]` 保留待定 (Pending)
+- **審查狀態**：`[+]` 採納納入 (Included)
 - **全文狀態**：[開放取用] Open Access 直連
 - **DOI 直連**：https://doi.org/10.37074/jalt.2023.6.1.29
 - **摘要 (Abstract)**：

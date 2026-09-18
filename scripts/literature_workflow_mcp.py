@@ -2,16 +2,18 @@
 scripts/literature_workflow_mcp.py
 
 學術文獻全流程 MCP 伺服器（Literature Workflow MCP Server）
-整合五大核心工具：
-1. search_candidate_papers: 檢索 OpenAlex 並生成候選文獻評估清單（引導研究者人機協同勾選 [x]）
-2. download_selected_papers: 依勾選狀態自動下載 OA PDF，提示人工自圖書館取得封閉期刊
-3. convert_pdfs_to_markdown: 批次將 raw_pdf 轉譯為純淨 Markdown，剔除 References 噪音
-4. build_paper_index: 為 extracted_text 建立標題感知之向量檢索索引
-5. search_paper_chunks: 依據自然語言查詢檢索最相關之論文精華段落
+整合核心工具鏈：
+1. search_candidate_papers: 檢索 OpenAlex 並生成流水號候選文獻評估清單
+2. get_candidate_papers: 讀取候選論文清單與詳細摘要欄位
+3. review_candidate_papers: 依研究者決策批次更新審查標記（Human-in-the-Loop [+] 採納 / [-] 排除 / [ ] 待定）
+4. download_selected_papers: 依採納狀態自動下載 OA PDF，提示人工調閱封閉期刊
+5. convert_pdfs_to_markdown: 批次將 raw_pdf 轉譯為純淨 Markdown，剔除 References 噪音
+6. build_paper_index: 為 extracted_text 建立標題感知之向量檢索索引
+7. search_paper_chunks: 依據自然語言查詢檢索最相關之論文精華段落
 
 支援雙模運作：
-- 命令列 CLI 模式：提供個別功能手動執行與除錯
-- MCP stdio 模式：提供 Antigravity / Claude Desktop 等 Agent 自主調用
+- 命令列 CLI 模式：提供個別功能手動執行、審查與除錯
+- MCP stdio 模式：提供 Antigravity / Claude Desktop 等 Agent 自主調用，支援人機協同審查
 """
 
 import io
@@ -38,6 +40,9 @@ if str(PROJECT_ROOT) not in sys.path:
 from scripts.fetch_openalex import (
     search_candidate_papers,
     download_selected_papers,
+    review_candidate_papers,
+    get_candidate_papers_summary,
+    apply_review_decisions,
     CANDIDATE_MD_FILE
 )
 from scripts.extract_pdf_to_md import convert_all_pdfs
@@ -92,7 +97,7 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
                 "tools": [
                     {
                         "name": "search_candidate_papers",
-                        "description": "向 OpenAlex 檢索指定主題的學術文獻候選清單，並生成 01_papers/candidate_papers.md。執行後請務必向研究者提示前往檔案審閱期刊來源與摘要，並將欲納入之論文標記為 [x]。",
+                        "description": "向 OpenAlex 檢索指定主題的學術文獻候選清單，生成流水號 candidate_papers_XX.md 與專屬獲取追蹤檔案。執行後請向研究者展示論文摘要並由研究者進行人機協同品質審查。",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -115,11 +120,53 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
                         }
                     },
                     {
-                        "name": "download_selected_papers",
-                        "description": "讀取 01_papers/candidate_papers.md 中研究者勾選為 [x] 的論文，自動將合法 Open Access PDF 下載至 01_papers/raw_pdf/，並對封閉訂閱期刊提供 DOI 與建議檔名指引。",
+                        "name": "get_candidate_papers",
+                        "description": "讀取指定候選清單（或最新清單）的論文詳細欄位（包含序號、審查狀態、篇名、來源期刊、年份、DOI 與完整摘要），供 Agent 於對話視窗向研究者呈現以進行審查。",
                         "inputSchema": {
                             "type": "object",
-                            "properties": {}
+                            "properties": {
+                                "sequence": {
+                                    "type": "string",
+                                    "description": "候選清單兩位數流水號（例如 '01', '02'），預設讀取最新清單",
+                                    "default": ""
+                                }
+                            }
+                        }
+                    },
+                    {
+                        "name": "review_candidate_papers",
+                        "description": "依據研究者在對話視窗中的確認決策，程式化更新指定候選清單中的文獻審查狀態（支援【逐筆單篇更新】或【批次多篇更新】，標記 [+] 採納、[-] 排除、[ ] 保留待定），並自動同步更新 Frontmatter 統計與專屬追蹤檔。落實人機協同（Human-in-the-Loop）。",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "sequence": {
+                                    "type": "string",
+                                    "description": "候選清單流水號（例如 '01'），若未指定則預設使用最新一份清單",
+                                    "default": ""
+                                },
+                                "decisions": {
+                                    "type": "object",
+                                    "description": "論文序號對應審查決策之鍵值對。可傳入單篇進行逐筆審查（例如 {'1': '+'}），亦可傳入多篇進行批次審查（例如 {'1': '+', '2': '-', '3': ' '}）。鍵為論文序號，值為決策：'+'（採納）、'-'（排除）、' '（保留待定）。",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "required": ["decisions"]
+                        }
+                    },
+                    {
+                        "name": "download_selected_papers",
+                        "description": "讀取候選清單中標記為 [+] 的採納論文，自動將合法 Open Access PDF 下載至 01_papers/raw_pdf/，更新專屬獲取追蹤報告，並對封閉訂閱期刊提供 DOI 與調閱檔名指引。",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "sequence": {
+                                    "type": "string",
+                                    "description": "指定下載之候選清單流水號（例如 '01'），預設使用最新清單",
+                                    "default": ""
+                                }
+                            }
                         }
                     },
                     {
@@ -171,11 +218,24 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
             sy = args.get("start_year", 2022)
             mc = args.get("max_candidates", 10)
             log = capture_output(search_candidate_papers, q, max_candidates=mc, start_year=sy)
+            summary = get_candidate_papers_summary()
+            papers_preview = ""
+            if "papers" in summary and summary["papers"]:
+                lines = []
+                for p in summary["papers"]:
+                    lines.append(f"[{p['index']}] 《{p['title']}》 | 來源：{p['source']} | {p['authors_year']}")
+                    lines.append(f"    摘要重點：{p['abstract'][:140]}..." if len(p['abstract']) > 140 else f"    摘要：{p['abstract']}")
+                papers_preview = "\n".join(lines)
+
             msg = (
                 f"[系統執行紀錄]\n{log}\n\n"
-                f"[重要提示]：候選清單已成功輸出至 01_papers/candidate_papers.md！\n"
-                f"請主動提示研究者打開檔案，審查各篇論文之發表來源（Source 期刊）與摘要（Abstract），"
-                f"確認具備學術品質後將標題旁的 [ ] 改為 [x]。待研究者確認完成後，再行調用 download_selected_papers 工具。"
+                f"📋 【人機協同審查指引（Human-in-the-Loop Protocol）】：\n"
+                f"候選文獻已成功輸出至 01_papers/{summary.get('file', 'candidate_papers_XX.md')}，摘要概覽如下：\n\n"
+                f"{papers_preview}\n\n"
+                f"⚠️ 【關鍵暫停點】：請 Agent 依據研究者的需求進行人機協同品質把關，支援以下兩種審查模式：\n"
+                f"  1. 【批次快速審查】：若研究者一次給予多篇指令（如「採納 1 與 3，排除 2」），Agent 調用 `review_candidate_papers(decisions={{\"1\": \"+\", \"2\": \"-\", \"3\": \"+\"}})` 批次更新。\n"
+                f"  2. 【逐筆引導審查】：若研究者要求一篇一篇看，Agent 請先展示第 1 篇的詳細摘要與專業評估建議，詢問研究者決策；研究者核定後調用 `review_candidate_papers(decisions={{\"1\": \"+\"}})` 寫入，再繼續呈現第 2 篇，依此類推。\n"
+                f"審查確認完畢後，Agent 方可調用 `download_selected_papers` 下載採納全文。"
             )
             return {
                 "jsonrpc": "2.0",
@@ -183,8 +243,39 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
                 "result": {"content": [{"type": "text", "text": msg}]}
             }
 
+        elif tool_name == "get_candidate_papers":
+            seq = args.get("sequence") or None
+            res = get_candidate_papers_summary(seq)
+            if "error" in res:
+                msg = f"[讀取失敗] {res['error']}"
+            else:
+                msg = json.dumps(res, ensure_ascii=False, indent=2)
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": msg}]}
+            }
+
+        elif tool_name == "review_candidate_papers":
+            seq = args.get("sequence") or None
+            decisions = args.get("decisions", {})
+            res = apply_review_decisions(seq, decisions)
+            if "error" in res:
+                msg = f"[審查更新失敗] {res['error']}"
+            else:
+                msg = (
+                    f"✅ {res['message']}\n\n"
+                    f"下一步建議：請 Agent 接續調用 `download_selected_papers` 工具，自動下載標記為 [+] 的 OA 全文文獻。"
+                )
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": msg}]}
+            }
+
         elif tool_name == "download_selected_papers":
-            log = capture_output(download_selected_papers)
+            seq = args.get("sequence") or None
+            log = capture_output(download_selected_papers, seq)
             return {
                 "jsonrpc": "2.0",
                 "id": req_id,
@@ -249,8 +340,12 @@ def main():
         if cmd == "search":
             q = sys.argv[2] if len(sys.argv) > 2 else "AI Agents higher education"
             search_candidate_papers(q, max_candidates=10, start_year=2022)
+        elif cmd == "review":
+            seq = sys.argv[2] if len(sys.argv) > 2 else None
+            review_candidate_papers(seq)
         elif cmd == "download":
-            download_selected_papers()
+            seq = sys.argv[2] if len(sys.argv) > 2 else None
+            download_selected_papers(seq)
         elif cmd == "convert":
             convert_all_pdfs()
         elif cmd == "build" or cmd == "index":
@@ -262,7 +357,8 @@ def main():
         else:
             print("使用方式（命令列模式）：")
             print("  python scripts/literature_workflow_mcp.py search [關鍵字]   # 檢索候選論文清單")
-            print("  python scripts/literature_workflow_mcp.py download          # 下載 candidate_papers.md 已勾選論文")
+            print("  python scripts/literature_workflow_mcp.py review [序號]     # 啟動終端機互動審查工具")
+            print("  python scripts/literature_workflow_mcp.py download [序號]   # 下載已標記 [+] 之採納論文")
             print("  python scripts/literature_workflow_mcp.py convert           # 批次將 PDF 轉譯清洗為 Markdown")
             print("  python scripts/literature_workflow_mcp.py index             # 重建本地論文向量索引庫")
             print("  python scripts/literature_workflow_mcp.py query [關鍵字]    # 測試檢索論文精華段落")

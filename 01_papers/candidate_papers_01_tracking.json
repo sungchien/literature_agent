@@ -1,0 +1,29 @@
+{
+  "sequence_id": "01",
+  "candidate_file": "candidate_papers_01.md",
+  "query": "AI Agent Education",
+  "last_updated": "2026-09-18 16:59:37",
+  "summary": {
+    "total_candidates": 0,
+    "total_included": 1,
+    "oa_downloaded": 1,
+    "subscription_provided": 0,
+    "subscription_pending": 0
+  },
+  "oa_downloaded_papers": [
+    {
+      "index": 1,
+      "title": "ChatGPT for good? On opportunities and challenges of large language models for education",
+      "first_author": "Kasneci",
+      "year": 2023,
+      "source": "Learning and Individual Differences",
+      "doi": "https://doi.org/10.1016/j.lindif.2023.102274",
+      "pdf_filename": "2023_Kasneci_ChatGPT_for_good__On_opportunities.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2023_Kasneci_ChatGPT_for_good__On_opportunities.pdf",
+      "file_size_kb": 187.6,
+      "download_time": "2026-09-17 10:06:37"
+    }
+  ],
+  "subscription_provided_papers": [],
+  "subscription_pending_papers": []
+}

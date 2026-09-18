@@ -1,0 +1,44 @@
+[
+  {
+    "index": 1,
+    "title": "Embracing the future of Artificial Intelligence in the classroom: the relevance of AI literacy, prompt engineering, and critical thinking in modern education",
+    "first_author": "Walter",
+    "year": 2024,
+    "source": "International Journal of Educational Technology in Higher Education",
+    "doi": "https://doi.org/10.1186/s41239-024-00448-3",
+    "cited_by_count": 1043,
+    "is_oa": true,
+    "pdf_url": "https://educationaltechnologyjournal.springeropen.com/counter/pdf/10.1186/s41239-024-00448-3",
+    "openalex_id": "https://openalex.org/W4392773210",
+    "abstract": "Abstract The present discussion examines the transformative impact of Artificial Intelligence (AI) in educational settings, focusing on the necessity for AI literacy, prompt engineering proficiency, and enhanced critical thinking skills. The introduction of AI into education marks a significant departure from conventional teaching methods, offering personalized learning and support for diverse educational requirements, including students with special needs. However, this integration presents challenges, including the need for comprehensive educator training and curriculum adaptation to align with societal structures. AI literacy is identified as crucial, encompassing an understanding of AI technologies and their broader societal impacts. Prompt engineering is highlighted as a key skill for eliciting specific responses from AI systems, thereby enriching educational experiences and promoting critical thinking. There is detailed analysis of strategies for embedding these skills within educational curricula and pedagogical practices. This is discussed through a case-study based on a Swiss university and a narrative literature review, followed by practical suggestions of how to implement AI in the classroom.",
+    "status": "pending"
+  },
+  {
+    "index": 2,
+    "title": "The Electronic Journal of e-Learning",
+    "first_author": "Author",
+    "year": 2023,
+    "source": "The Electronic Journal of e-Learning",
+    "doi": "https://doi.org/10.34190/ejel.",
+    "cited_by_count": 765,
+    "is_oa": true,
+    "pdf_url": "https://academic-publishing.org/index.php/ejel/article/download/2835/2116/6008",
+    "openalex_id": "https://openalex.org/W4315866233",
+    "abstract": "In recent years, the role of technology in language classrooms has grown in importance.Due to recent developments in the education sector, technology-enhanced language learning (TELL) has come into the spotlight.Previous studies have shown that technology encourages both instructors and students to take an active role in the language learning process.In light of the widespread adoption and enabling power of immersive technologies and the potential applications of TELL, it is imperative that the literature be continuously investigated to identify the types and tendencies of recent studies in order to understand current practises and guide future research in the field with two research questions; RQ1: What are the trends and practices of TELL in language teaching and learning?and RQ2: What are the research methodologies employed in TELL studies?This review carefully examines the overall research trends and practises in language education in order to chart the development of TELL during the past few years.Out of 87 publications found in 2020-2022, 17 were selected using exclusion and inclusion criteria from Web of Science (WoS) and Scopus.Using five codes obtained from previous systematic reviews, we performed an analysis and synthesis of these publications.The codes are: 1) aim, 2) methodology, 3) sample, 4) country, and 5) outcomes.The bulk of the studies used a quantitative research technique to look into TELL trends and practises in language teaching and learning, and the systematic review found that TELL was more widespread in universities than in other types of schools, with the lowest occurrence seen in primary schools.In light of these findings, suggestions for more investigation were made.Academicians are urged to broaden the scope of future study and include students from all levels of education in future TELL practises in order to better understand TELL's usage in language teaching and learning.",
+    "status": "pending"
+  },
+  {
+    "index": 3,
+    "title": "The role of ChatGPT in higher education: Benefits, challenges, and future research directions",
+    "first_author": "Rasul",
+    "year": 2023,
+    "source": "Journal of Applied Learning & Teaching",
+    "doi": "https://doi.org/10.37074/jalt.2023.6.1.29",
+    "cited_by_count": 553,
+    "is_oa": true,
+    "pdf_url": "https://journals.sfu.ca/jalt/index.php/jalt/article/download/787/583",
+    "openalex_id": "https://openalex.org/W4376139682",
+    "abstract": "This paper examines the potential benefits and challenges of using the generative AI model, ChatGPT, in higher education, in the backdrop of the constructivist theory of learning. This perspective-type study presents five benefits of ChatGPT: the potential to facilitate adaptive learning, provide personalised feedback, support research and data analysis, offer automated administrative services, and aid in developing innovative assessments. Additionally, the paper identifies five challenges: academic integrity concerns, reliability issues, inability to evaluate and reinforce graduate skill sets, limitations in assessing learning outcomes, and potential biases and falsified information in information processing. The paper argues that tertiary educators and students must exercise caution when using ChatGPT for academic purposes to ensure its ethical, reliable, and effective use. To achieve this, the paper proposes various propositions, such as prioritising education on the responsible and ethical use of ChatGPT, devising new assessment strategies, addressing bias and falsified information, and including AI literacy as part of graduate skills. By balancing the potential benefits and challenges, ChatGPT can enhance students’ learning experiences in higher education.",
+    "status": "pending"
+  }
+]

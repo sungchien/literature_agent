@@ -1,0 +1,35 @@
+{
+  "sequence_id": "02",
+  "candidate_file": "candidate_papers_02.md",
+  "query": "reflective journals scaffolding higher education",
+  "last_updated": "2026-09-18 11:20:05",
+  "summary": {
+    "total_candidates": 3,
+    "total_included": 2,
+    "oa_downloaded": 0,
+    "subscription_provided": 0,
+    "subscription_pending": 2
+  },
+  "oa_downloaded_papers": [],
+  "subscription_provided_papers": [],
+  "subscription_pending_papers": [
+    {
+      "index": 1,
+      "title": "Embracing the future of Artificial Intelligence in the classroom: the relevance of AI literacy, prompt engineering, and critical thinking in modern education",
+      "first_author": "Walter",
+      "year": 2024,
+      "source": "International Journal of Educational Technology in Higher Education",
+      "doi": "https://doi.org/10.1186/s41239-024-00448-3",
+      "suggested_filename": "2024_Walter_Embracing_the_future_of_Artificial.pdf"
+    },
+    {
+      "index": 3,
+      "title": "The role of ChatGPT in higher education: Benefits, challenges, and future research directions",
+      "first_author": "Rasul",
+      "year": 2023,
+      "source": "Journal of Applied Learning & Teaching",
+      "doi": "https://doi.org/10.37074/jalt.2023.6.1.29",
+      "suggested_filename": "2023_Rasul_The_role_of_ChatGPT_in_higher_educa.pdf"
+    }
+  ]
+}
