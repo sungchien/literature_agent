@@ -34,6 +34,118 @@ RAW_PDF_DIR = Path("01_papers/raw_pdf")
 METADATA_FILE = Path("01_papers/downloaded_metadata.json")
 DEFAULT_CANDIDATE_MD = Path("01_papers/candidate_papers.md")
 CANDIDATE_MD_FILE = DEFAULT_CANDIDATE_MD  # 保持相容性
+FILTER_CONFIG_FILENAME = "journal_filter_config.json"
+
+
+def get_journal_filter_config_path() -> Path:
+    """尋找 journal_filter_config.json 路徑（優先專案 scripts/ 目錄，次之專案根目錄）"""
+    script_dir_cfg = Path(__file__).resolve().parent / FILTER_CONFIG_FILENAME
+    if script_dir_cfg.exists():
+        return script_dir_cfg
+    root_cfg = Path(__file__).resolve().parent.parent / FILTER_CONFIG_FILENAME
+    if root_cfg.exists():
+        return root_cfg
+    return script_dir_cfg
+
+
+def load_journal_filter_config() -> Dict[str, Any]:
+    """載入外部期刊品質防護設定檔；若不存在則自動生成標準預設檔"""
+    cfg_path = get_journal_filter_config_path()
+    default_config = {
+        "_comment": "學術品質防護設定檔：排除巨型期刊（Mega-journals）與爭議性/掠奪性出版商",
+        "enabled": True,
+        "filter_retracted": True,
+        "fetch_multiplier": 3,
+        "min_fetch_size": 30,
+        "excluded_publishers": [
+            "Multidisciplinary Digital Publishing Institute",
+            "MDPI",
+            "Frontiers Media",
+            "Hindawi",
+            "OMICS",
+            "Bentham",
+            "Science Publishing Group",
+            "InTechOpen",
+            "Academic Journals",
+            "Baishideng"
+        ],
+        "excluded_mega_journals": [
+            "Sustainability",
+            "Sensors",
+            "Applied Sciences",
+            "IJERPH",
+            "Electronics",
+            "Mathematics",
+            "Healthcare",
+            "Energies",
+            "PLOS ONE",
+            "IEEE Access",
+            "Scientific Reports",
+            "Heliyon"
+        ],
+        "excluded_title_keywords": [
+            "International Journal of Emerging",
+            "International Journal of Recent",
+            "Global Journal of"
+        ]
+    }
+    if not cfg_path.exists():
+        try:
+            cfg_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(cfg_path, "w", encoding="utf-8") as f:
+                json.dump(default_config, f, ensure_ascii=False, indent=2)
+        except Exception:
+            return default_config
+        return default_config
+
+    try:
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            user_config = json.load(f)
+            for k, v in default_config.items():
+                if k not in user_config:
+                    user_config[k] = v
+            return user_config
+    except Exception as e:
+        print(f"[警告] 讀取 {cfg_path.name} 失敗：{e}，使用內建安全防護規則。")
+        return default_config
+
+
+def check_paper_quality(item: dict, config: Dict[str, Any]) -> Tuple[bool, str]:
+    """依據外部設定檔，檢查單篇文獻是否命中排除條件（撤稿、巨型期刊、爭議出版商）"""
+    if not config.get("enabled", True):
+        return False, ""
+
+    # 1. 撤稿論文過濾
+    if config.get("filter_retracted", True) and item.get("is_retracted", False):
+        return True, "已撤稿論文 (Retracted Paper)"
+
+    primary_loc = item.get("primary_location") or {}
+    source_obj = primary_loc.get("source") or {}
+    source_name = (source_obj.get("display_name") or "").strip()
+    host_org = (source_obj.get("host_organization_name") or "").strip()
+
+    source_lower = source_name.lower()
+    host_lower = host_org.lower()
+
+    # 2. 檢查爭議/巨型出版商
+    for pub in config.get("excluded_publishers", []):
+        p_clean = pub.strip().lower()
+        if p_clean and (p_clean in host_lower or p_clean in source_lower):
+            return True, f"爭議/巨型出版商 [{host_org or pub}]"
+
+    # 3. 檢查巨型期刊名
+    for mega in config.get("excluded_mega_journals", []):
+        m_clean = mega.strip().lower()
+        if m_clean and (m_clean == source_lower or f" {m_clean} " in f" {source_lower} " or source_lower.startswith(f"{m_clean}:")):
+            return True, f"巨型期刊 [{source_name or mega}]"
+
+    # 4. 檢查可疑水刊命名模式
+    for kw in config.get("excluded_title_keywords", []):
+        k_clean = kw.strip().lower()
+        if k_clean and k_clean in source_lower:
+            return True, f"可疑水刊命名模式 [{source_name}]"
+
+    return False, ""
 
 
 def sanitize_filename(name: str) -> str:
@@ -438,10 +550,12 @@ def search_candidate_papers(
     max_candidates: int = 10,
     start_year: int = 2022,
     end_year: int = 2026,
+    enable_quality_filter: bool = True,
     target_file: Optional[Path] = None
 ) -> Optional[Path]:
     """
     功能 1 (search)：向 OpenAlex API 檢索候選文獻，生成帶流水號之 candidate_papers_XX.md 與追蹤檔
+    支援外部設定檔（journal_filter_config.json）排除巨型期刊與爭議性/掠奪性出版商
     """
     PAPERS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -454,15 +568,33 @@ def search_candidate_papers(
 
     cache_path = PAPERS_DIR / f"candidates_cache_{seq_str}.json"
 
+    filter_config = load_journal_filter_config()
+    is_filter_active = enable_quality_filter and filter_config.get("enabled", True)
+
     print(f"\n[查詢] 正在向 OpenAlex 檢索候選學術文獻：『{query}』...")
-    print(f"[條件] 年份區間：{start_year} - {end_year} 年 | 候選評估篇數：{max_candidates} 篇")
+    print(f"[條件] 年份區間：{start_year} - {end_year} 年 | 目標評估篇數：{max_candidates} 篇")
+    if is_filter_active:
+        cfg_name = get_journal_filter_config_path().name
+        print(f"[品質] 🛡️ 已啟用品質防護（依據 `{cfg_name}` 排除巨型期刊與爭議出版商，並剔除撤稿）")
+    else:
+        print(f"[品質] ⚠️ 未啟用品質防護（將無條件依被引數排序）")
     print(f"[目標] 輸出流水號檔案：{target_path.name}")
+
+    # 若啟用品質防護，擴大初選檢索量以便剔除後仍能保留足夠的高引用優質候選名單
+    if is_filter_active:
+        mult = filter_config.get("fetch_multiplier", filter_config.get("pool_multiplier", 3))
+        min_fetch = filter_config.get("min_fetch_size", filter_config.get("min_pool_size", 30))
+        initial_fetch_size = max(max_candidates * mult, min_fetch)
+        api_filter = f"publication_year:{start_year}-{end_year},is_retracted:false"
+    else:
+        initial_fetch_size = max_candidates
+        api_filter = f"publication_year:{start_year}-{end_year}"
 
     params = {
         "search": query,
-        "filter": f"publication_year:{start_year}-{end_year}",
+        "filter": api_filter,
         "sort": "cited_by_count:desc",
-        "per-page": max_candidates
+        "per-page": initial_fetch_size
     }
     api_url = "https://api.openalex.org/works?" + urllib.parse.urlencode(params)
     headers = {
@@ -477,9 +609,37 @@ def search_candidate_papers(
         print(f"[錯誤] OpenAlex API 請求失敗：{e}")
         return None
 
-    results = data.get("results", [])
-    if not results:
+    raw_results = data.get("results", [])
+    if not raw_results:
         print("[警告] 未找到符合條件之文獻，請調整檢索關鍵字或放寬年份限制。")
+        return None
+
+    filtered_results = []
+    skipped_records = []
+
+    for item in raw_results:
+        if is_filter_active:
+            is_bad, reason = check_paper_quality(item, filter_config)
+            if is_bad:
+                t_str = (item.get("title") or "Untitled")[:45]
+                skipped_records.append(f"{reason} - 《{t_str}...》")
+                continue
+
+        filtered_results.append(item)
+        if len(filtered_results) >= max_candidates:
+            break
+
+    if skipped_records:
+        cfg_name = get_journal_filter_config_path().name
+        print(f"\n🛡️ [學術品質防護] 依據 `{cfg_name}` 自動排除 {len(skipped_records)} 篇巨型/爭議期刊文獻：")
+        for rec in skipped_records[:5]:
+            print(f"   • 排除：{rec}")
+        if len(skipped_records) > 5:
+            print(f"   ...等共排除 {len(skipped_records)} 篇非目標專業期刊文獻。")
+
+    results = filtered_results
+    if not results:
+        print("[警告] 經過品質篩選後未找到符合條件之文獻，建議調整檢索關鍵字或放寬年份限制。")
         return None
 
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -493,6 +653,8 @@ def search_candidate_papers(
         f"  max_results: {len(results)}",
         f"  start_year: {start_year}",
         f"  end_year: {end_year}",
+        f"  quality_filter: {str(is_filter_active).lower()}",
+        f"  excluded_by_filter: {len(skipped_records)}",
         "review_stats:",
         f"  total: {len(results)}",
         "  included: 0",
@@ -505,6 +667,7 @@ def search_candidate_papers(
     header_lines = [
         f"# 候選文獻評估與品質篩選清單：{target_path.name}\n",
         f"> **檢索主題**：`{query}` | **檢索年份**：{start_year}-{end_year} | **檢索總數**：{len(results)} 篇",
+        f"> **學術防護**：{'✅ 已依據外部設定排除巨型/爭議期刊（本次過濾 ' + str(len(skipped_records)) + ' 篇）' if is_filter_active else '⚠️ 未啟用品質防護'}",
         ">",
         "> ⚠️ **【系統自動化管理提示（請勿手動編輯）】**：",
         "> 本檔案由系統腳本自動維護，**請勿直接手動編輯此 Markdown 檔案**，以防格式錯位破壞資料完整性！",
@@ -685,7 +848,7 @@ def list_candidate_papers():
         print(row)
 
     print("-" * 112)
-    summary_row = f"{'總計':<4} {f'共 {len(files)} 批候選清單':<24} {'-':<17} {total_candidates_all:<5} {total_included_all:<7} {total_excluded_all:<7} {total_pending_all:<7} {total_oa_all:<7} {total_sub_prov_all:<8} {total_sub_pend_all:<6} 全專案文獻池"
+    summary_row = f"{'總計':<4} {f'共 {len(files)} 批候選清單':<24} {'-':<17} {total_candidates_all:<5} {total_included_all:<7} {total_excluded_all:<7} {total_pending_all:<7} {total_oa_all:<7} {total_sub_prov_all:<8} {total_sub_pend_all:<6} 全專案文獻總庫"
     print(summary_row)
     print("=" * 112)
     print("\n💡 常用操作指引：")
@@ -1264,6 +1427,7 @@ def main():
     p_search.add_argument("-m", "--max", type=int, default=10, help="最大檢索候選筆數（預設：10）")
     p_search.add_argument("-s", "--start-year", type=int, default=2022, help="發表起始年份（預設：2022）")
     p_search.add_argument("-e", "--end-year", type=int, default=2026, help="發表結束年份（預設：2026）")
+    p_search.add_argument("--no-filter", action="store_true", help="停用巨型期刊與爭議出版商品質防護（預設啟用防護）")
 
     # 2. list 指令
     subparsers.add_parser("list", help="全域瀏覽所有 candidate_papers[00-99].md 之檢索條件、審查與追蹤狀態")
@@ -1285,14 +1449,14 @@ def main():
     if not args.command:
         if len(sys.argv) > 1 and not sys.argv[1].startswith("-"):
             q = " ".join(sys.argv[1:])
-            search_candidate_papers(q, max_candidates=10, start_year=2022, end_year=2026)
+            search_candidate_papers(q, max_candidates=10, start_year=2022, end_year=2026, enable_quality_filter=True)
             return
         parser.print_help()
         return
 
     if args.command == "search":
         q = " ".join(args.query) if args.query else "AI Agents in Higher Education scaffolding"
-        search_candidate_papers(q, max_candidates=args.max, start_year=args.start_year, end_year=args.end_year)
+        search_candidate_papers(q, max_candidates=args.max, start_year=args.start_year, end_year=args.end_year, enable_quality_filter=(not args.no_filter))
 
     elif args.command == "list":
         list_candidate_papers()

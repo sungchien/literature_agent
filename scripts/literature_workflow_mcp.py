@@ -23,7 +23,7 @@ import json
 import math
 import re
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 # 確保 Windows 終端輸出為 UTF-8
 if sys.stdout.encoding != 'utf-8':
@@ -45,7 +45,7 @@ from scripts.fetch_openalex import (
     apply_review_decisions,
     CANDIDATE_MD_FILE
 )
-from scripts.extract_pdf_to_md import convert_all_pdfs
+from scripts.extract_pdf_to_md import convert_all_pdfs, convert_batch_or_all
 from scripts.paper_retriever_mcp import (
     build_index_data,
     search_index_data
@@ -70,23 +70,42 @@ def capture_output(func, *args, **kwargs) -> str:
 # MCP JSON-RPC 2.0 協議處理
 # =====================================================================
 
-def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
+def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     """處理標準 JSON-RPC 2.0 MCP 請求協議"""
     method = request.get("method")
     req_id = request.get("id")
 
+    # 1. 處理通知（Notifications）：JSON-RPC 2.0 規定無 id 的請求為通知，嚴禁回傳任何回應
+    if req_id is None or (method and method.startswith("notifications/")):
+        return None
+
+    # 2. 處理 initialize 連線握手
     if method == "initialize":
+        params = request.get("params", {})
+        protocol_version = params.get("protocolVersion", "2024-11-05")
         return {
             "jsonrpc": "2.0",
             "id": req_id,
             "result": {
-                "protocolVersion": "2024-11-05",
-                "capabilities": {"tools": {}},
+                "protocolVersion": protocol_version,
+                "capabilities": {
+                    "tools": {
+                        "listChanged": False
+                    }
+                },
                 "serverInfo": {
                     "name": "academic-literature-workflow",
                     "version": "2.0.0"
                 }
             }
+        }
+
+    # 3. 處理 ping 心跳檢測
+    elif method == "ping":
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {}
         }
 
     elif method == "tools/list":
@@ -97,7 +116,7 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
                 "tools": [
                     {
                         "name": "search_candidate_papers",
-                        "description": "向 OpenAlex 檢索指定主題的學術文獻候選清單，生成流水號 candidate_papers_XX.md 與專屬獲取追蹤檔案。執行後請向研究者展示論文摘要並由研究者進行人機協同品質審查。",
+                        "description": "向 OpenAlex 檢索指定主題的學術文獻候選清單，自動依據外部設定檔（journal_filter_config.json）排除 MDPI, Frontiers 等巨型期刊與爭議出版社以把關品質，生成流水號 candidate_papers_XX.md 與專屬獲取追蹤檔案。執行後請向研究者展示論文摘要並由研究者進行人機協同品質審查。",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -114,6 +133,11 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
                                     "type": "integer",
                                     "description": "候選文獻檢索數量（預設 10 篇）",
                                     "default": 10
+                                },
+                                "enable_quality_filter": {
+                                    "type": "boolean",
+                                    "description": "是否啟用學術品質防護（依據 scripts/journal_filter_config.json 自動排除巨型期刊與爭議出版社，預設 True）",
+                                    "default": True
                                 }
                             },
                             "required": ["query"]
@@ -171,10 +195,16 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
                     },
                     {
                         "name": "convert_pdfs_to_markdown",
-                        "description": "批次將 01_papers/raw_pdf/ 目錄下的所有 PDF 轉譯為純淨 Markdown 文本，自動剔除 References 引用清單與出版噪音，存放至 01_papers/extracted_text/。",
+                        "description": "將 01_papers/raw_pdf/ 目錄下的 PDF 轉譯為純淨 Markdown 文本，自動剔除 References 引用清單與出版噪音，存放至 01_papers/extracted_text/。支援指定候選清單批次流水號進行針對性轉譯，避免全量重複轉換。",
                         "inputSchema": {
                             "type": "object",
-                            "properties": {}
+                            "properties": {
+                                "batch": {
+                                    "type": "string",
+                                    "description": "指定轉譯之候選清單流水號（例如 '01', '02'），若不指定則預設轉譯最新批次，傳入 'all' 則全量轉譯",
+                                    "default": ""
+                                }
+                            }
                         }
                     },
                     {
@@ -217,7 +247,8 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
             q = args.get("query", "")
             sy = args.get("start_year", 2022)
             mc = args.get("max_candidates", 10)
-            log = capture_output(search_candidate_papers, q, max_candidates=mc, start_year=sy)
+            eqf = args.get("enable_quality_filter", True)
+            log = capture_output(search_candidate_papers, q, max_candidates=mc, start_year=sy, enable_quality_filter=eqf)
             summary = get_candidate_papers_summary()
             papers_preview = ""
             if "papers" in summary and summary["papers"]:
@@ -283,7 +314,8 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
             }
 
         elif tool_name == "convert_pdfs_to_markdown":
-            log = capture_output(convert_all_pdfs)
+            batch_arg = args.get("batch", "")
+            log = capture_output(convert_batch_or_all, batch_arg)
             return {
                 "jsonrpc": "2.0",
                 "id": req_id,
@@ -324,6 +356,20 @@ def handle_mcp_request(request: Dict[str, Any]) -> Dict[str, Any]:
                 "error": {"code": -32601, "message": f"未知的工具：{tool_name}"}
             }
 
+    elif method == "resources/list":
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {"resources": []}
+        }
+
+    elif method == "prompts/list":
+        return {
+            "jsonrpc": "2.0",
+            "id": req_id,
+            "result": {"prompts": []}
+        }
+
     return {
         "jsonrpc": "2.0",
         "id": req_id,
@@ -339,7 +385,7 @@ def main():
         cmd = sys.argv[1].lower()
         if cmd == "search":
             q = sys.argv[2] if len(sys.argv) > 2 else "AI Agents higher education"
-            search_candidate_papers(q, max_candidates=10, start_year=2022)
+            search_candidate_papers(q, max_candidates=10, start_year=2022, enable_quality_filter=True)
         elif cmd == "review":
             seq = sys.argv[2] if len(sys.argv) > 2 else None
             review_candidate_papers(seq)
@@ -347,7 +393,8 @@ def main():
             seq = sys.argv[2] if len(sys.argv) > 2 else None
             download_selected_papers(seq)
         elif cmd == "convert":
-            convert_all_pdfs()
+            batch_val = sys.argv[2] if len(sys.argv) > 2 else ""
+            convert_batch_or_all(batch_val)
         elif cmd == "build" or cmd == "index":
             res = build_index_data()
             print(json.dumps(res, ensure_ascii=False, indent=2))
@@ -366,21 +413,19 @@ def main():
 
     # 無參數時啟動標準 MCP stdio 監聽
     for line in sys.stdin:
-        if not line.strip():
+        line_clean = line.strip()
+        if not line_clean:
             continue
         try:
-            req = json.loads(line)
+            req = json.loads(line_clean)
             resp = handle_mcp_request(req)
-            sys.stdout.write(json.dumps(resp) + "\n")
-            sys.stdout.flush()
+            if resp is not None:
+                sys.stdout.write(json.dumps(resp, ensure_ascii=False) + "\n")
+                sys.stdout.flush()
         except Exception as e:
-            err_resp = {
-                "jsonrpc": "2.0",
-                "id": None,
-                "error": {"code": -32700, "message": f"Parse error: {str(e)}"}
-            }
-            sys.stdout.write(json.dumps(err_resp) + "\n")
-            sys.stdout.flush()
+            # 錯誤一律輸出至 stderr，嚴禁污染 stdout 之 JSON-RPC 雙向傳輸管道
+            sys.stderr.write(f"[MCP Server Error] {str(e)}\n")
+            sys.stderr.flush()
 
 if __name__ == "__main__":
     main()

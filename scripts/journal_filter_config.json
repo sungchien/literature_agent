@@ -1,0 +1,38 @@
+{
+  "_comment": "學術品質防護設定檔：排除巨型期刊（Mega-journals）與爭議性/掠奪性出版商。研究者可自由在此檔案中增刪刊物與出版商名稱。",
+  "enabled": true,
+  "filter_retracted": true,
+  "fetch_multiplier": 3,
+  "min_fetch_size": 30,
+  "excluded_publishers": [
+    "Multidisciplinary Digital Publishing Institute",
+    "MDPI",
+    "Frontiers Media",
+    "Hindawi",
+    "OMICS",
+    "Bentham",
+    "Science Publishing Group",
+    "InTechOpen",
+    "Academic Journals",
+    "Baishideng"
+  ],
+  "excluded_mega_journals": [
+    "Sustainability",
+    "Sensors",
+    "Applied Sciences",
+    "IJERPH",
+    "Electronics",
+    "Mathematics",
+    "Healthcare",
+    "Energies",
+    "PLOS ONE",
+    "IEEE Access",
+    "Scientific Reports",
+    "Heliyon"
+  ],
+  "excluded_title_keywords": [
+    "International Journal of Emerging",
+    "International Journal of Recent",
+    "Global Journal of"
+  ]
+}
