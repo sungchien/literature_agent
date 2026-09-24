@@ -2,28 +2,134 @@
   "sequence_id": "01",
   "candidate_file": "candidate_papers_01.md",
   "query": "AI Agent Education",
-  "last_updated": "2026-09-18 16:59:37",
+  "last_updated": "2026-09-23 23:06:09",
   "summary": {
     "total_candidates": 0,
-    "total_included": 1,
-    "oa_downloaded": 1,
+    "total_included": 10,
+    "oa_downloaded": 9,
     "subscription_provided": 0,
-    "subscription_pending": 0
+    "subscription_pending": 1
   },
   "oa_downloaded_papers": [
     {
       "index": 1,
-      "title": "ChatGPT for good? On opportunities and challenges of large language models for education",
-      "first_author": "Kasneci",
-      "year": 2023,
-      "source": "Learning and Individual Differences",
-      "doi": "https://doi.org/10.1016/j.lindif.2023.102274",
-      "pdf_filename": "2023_Kasneci_ChatGPT_for_good__On_opportunities.pdf",
-      "pdf_path": "01_papers\\raw_pdf\\2023_Kasneci_ChatGPT_for_good__On_opportunities.pdf",
-      "file_size_kb": 187.6,
-      "download_time": "2026-09-17 10:06:37"
+      "title": "Towards end-to-end automation of AI research",
+      "first_author": "Chris Lu",
+      "year": 2026,
+      "source": "Nature",
+      "doi": "https://doi.org/10.1038/s41586-026-10265-5",
+      "pdf_filename": "2026_Chris_Lu_Towards_end-to-end_automation_of_AI.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2026_Chris_Lu_Towards_end-to-end_automation_of_AI.pdf",
+      "file_size_kb": 11456.2,
+      "download_time": "2026-09-23 23:02:40"
+    },
+    {
+      "index": 2,
+      "title": "Accelerating scientific discovery with Co-Scientist",
+      "first_author": "Juraj Gottweis",
+      "year": 2026,
+      "source": "Nature",
+      "doi": "https://doi.org/10.1038/s41586-026-10644-y",
+      "pdf_filename": "2026_Juraj_Gottweis_Accelerating_scientific_discovery_w.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2026_Juraj_Gottweis_Accelerating_scientific_discovery_w.pdf",
+      "file_size_kb": 5747.3,
+      "download_time": "2026-09-23 23:06:07"
+    },
+    {
+      "index": 3,
+      "title": "SciAgents: Automating Scientific Discovery Through Bioinspired Multi-Agent Intelligent Graph Reasoning",
+      "first_author": "Alireza Ghafarollahi",
+      "year": 2024,
+      "source": "Advanced Materials",
+      "doi": "https://doi.org/10.1002/adma.202413523",
+      "pdf_filename": "2024_Alireza_Ghafarollahi_SciAgents__Automating_Scientific_Di.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2024_Alireza_Ghafarollahi_SciAgents__Automating_Scientific_Di.pdf",
+      "file_size_kb": 43888.8,
+      "download_time": "2026-09-23 23:03:00"
+    },
+    {
+      "index": 4,
+      "title": "Agent Laboratory: Using LLM Agents as Research Assistants",
+      "first_author": "Samuel Schmidgall",
+      "year": 2025,
+      "source": "arXiv (Cornell University)",
+      "doi": "https://doi.org/10.48550/arxiv.2501.04227",
+      "pdf_filename": "2025_Samuel_Schmidgall_Agent_Laboratory__Using_LLM_Agents.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2025_Samuel_Schmidgall_Agent_Laboratory__Using_LLM_Agents.pdf",
+      "file_size_kb": 3559.0,
+      "download_time": "2026-09-23 23:03:03"
+    },
+    {
+      "index": 6,
+      "title": "PaperOrchestra: A Multi-Agent Framework for Automated AI Research Paper Writing",
+      "first_author": "Yiwen Song",
+      "year": 2026,
+      "source": "arXiv (Cornell University)",
+      "doi": "https://doi.org/10.48550/arxiv.2604.05018",
+      "pdf_filename": "2026_Yiwen_Song_PaperOrchestra__A_Multi-Agent_Frame.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2026_Yiwen_Song_PaperOrchestra__A_Multi-Agent_Frame.pdf",
+      "file_size_kb": 30704.2,
+      "download_time": "2026-09-23 23:03:33"
+    },
+    {
+      "index": 7,
+      "title": "ResearchAgent: Iterative Research Idea Generation over Scientific Literature with Large Language Models",
+      "first_author": "Jinheon Baek",
+      "year": 2025,
+      "source": "NAACL 2025",
+      "doi": "https://doi.org/10.18653/v1/2025.naacl-long.342",
+      "pdf_filename": "2025_Jinheon_Baek_ResearchAgent__Iterative_Research_I.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2025_Jinheon_Baek_ResearchAgent__Iterative_Research_I.pdf",
+      "file_size_kb": 663.6,
+      "download_time": "2026-09-23 23:03:35"
+    },
+    {
+      "index": 8,
+      "title": "The AI Scientist-v2: Workshop-Level Automated Scientific Discovery via Agentic Tree Search",
+      "first_author": "Yutaro Yamada",
+      "year": 2025,
+      "source": "arXiv (Cornell University)",
+      "doi": "https://doi.org/10.48550/arxiv.2504.08066",
+      "pdf_filename": "2025_Yutaro_Yamada_The_AI_Scientist-v2__Workshop-Level.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2025_Yutaro_Yamada_The_AI_Scientist-v2__Workshop-Level.pdf",
+      "file_size_kb": 8714.5,
+      "download_time": "2026-09-23 23:03:59"
+    },
+    {
+      "index": 9,
+      "title": "From Automation to Autonomy: A Survey on Large Language Models in Scientific Discovery",
+      "first_author": "Tianshi Zheng",
+      "year": 2025,
+      "source": "EMNLP 2025",
+      "doi": "https://doi.org/10.18653/v1/2025.emnlp-main.895",
+      "pdf_filename": "2025_Tianshi_Zheng_From_Automation_to_Autonomy__A_Surv.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2025_Tianshi_Zheng_From_Automation_to_Autonomy__A_Surv.pdf",
+      "file_size_kb": 442.6,
+      "download_time": "2026-09-23 23:04:01"
+    },
+    {
+      "index": 10,
+      "title": "A review of large language models and autonomous agents in chemistry",
+      "first_author": "Mayk Caldas Ramos",
+      "year": 2024,
+      "source": "Chemical Science",
+      "doi": "https://doi.org/10.1039/d4sc03921a",
+      "pdf_filename": "2024_Mayk_Caldas_Ramos_A_review_of_large_language_models_a.pdf",
+      "pdf_path": "01_papers\\raw_pdf\\2024_Mayk_Caldas_Ramos_A_review_of_large_language_models_a.pdf",
+      "file_size_kb": 3584.2,
+      "download_time": "2026-09-23 23:06:09"
     }
   ],
   "subscription_provided_papers": [],
-  "subscription_pending_papers": []
+  "subscription_pending_papers": [
+    {
+      "index": 5,
+      "title": "PaperOrchestrator: An LLM-Orchestrated multi-agent pipeline for automated end-to-end scientific paper writing",
+      "first_author": "Chunhong Yuan",
+      "year": 2026,
+      "source": "Journal of King Saud University - Computer and Information Sciences",
+      "doi": "https://doi.org/10.1007/s44443-026-00708-4",
+      "suggested_filename": "2026_Chunhong_Yuan_PaperOrchestrator__An_LLM-Orchestra.pdf"
+    }
+  ]
 }
