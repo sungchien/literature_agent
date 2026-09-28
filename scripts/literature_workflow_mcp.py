@@ -50,6 +50,12 @@ from scripts.paper_retriever_mcp import (
     build_index_data,
     search_index_data
 )
+from scripts.import_external_papers import (
+    scan_inbox,
+    resolve_inbox_papers,
+    ingest_inbox_papers,
+    list_external_papers
+)
 
 # =====================================================================
 # 工具執行輔助函式（捕捉 stdout 作為 MCP 回傳文字）
@@ -181,7 +187,7 @@ def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                     },
                     {
                         "name": "download_selected_papers",
-                        "description": "讀取候選清單中標記為 [+] 的採納論文，自動將合法 Open Access PDF 下載至 01_papers/raw_pdf/，更新專屬獲取追蹤報告，並對封閉訂閱期刊提供 DOI 與調閱檔名指引。",
+                        "description": "讀取候選清單中標記為 [+] 的採納論文，自動將合法 Open Access PDF 下載至 01_papers/raw_pdf/，更新專屬獲取追蹤報告，並對封閉訂閱期刊提供 DOI 與 Google Scholar 檢索調閱檔名指引。",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -232,6 +238,28 @@ def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                                 }
                             },
                             "required": ["query"]
+                        }
+                    },
+                    {
+                        "name": "scan_inbox_papers",
+                        "description": "掃描 01_papers/inbox/ 目錄，檢查是否有外部自尋、指導教授交辦或手動下載的 PDF 文獻等待治理入庫。",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {}
+                        }
+                    },
+                    {
+                        "name": "ingest_external_papers",
+                        "description": "掃描 01_papers/inbox/ 目錄中的外部自尋文獻 PDF，自動提取 DOI 並連線 CrossRef 查詢權威元數據，執行去重比對後規範化重新命名（{年份}_{作者}_{短篇名}.pdf）搬入 01_papers/raw_pdf/，並同步更新 external_papers_catalog.md 與元數據資料庫。",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "source_tag": {
+                                    "type": "string",
+                                    "description": "文獻來源標籤（例如：'教授推薦', '博碩士論文', '自尋研討會'，預設 '外部自尋'）",
+                                    "default": "外部自尋"
+                                }
+                            }
                         }
                     }
                 ]
@@ -347,6 +375,23 @@ def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 "jsonrpc": "2.0",
                 "id": req_id,
                 "result": {"content": [{"type": "text", "text": formatted_text}]}
+            }
+
+        elif tool_name == "scan_inbox_papers":
+            log = capture_output(scan_inbox)
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": log if log else "收件箱掃描完成。"}]}
+            }
+
+        elif tool_name == "ingest_external_papers":
+            tag = args.get("source_tag", "外部自尋")
+            log = capture_output(ingest_inbox_papers, source_tag=tag)
+            return {
+                "jsonrpc": "2.0",
+                "id": req_id,
+                "result": {"content": [{"type": "text", "text": log if log else "外部文獻治理入庫完成。"}]}
             }
 
         else:

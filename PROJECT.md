@@ -53,6 +53,8 @@
        - 提取論文摘要：`get_candidate_papers`
        - 記錄審查決策：`review_candidate_papers`
        - 下載採納全文：`download_selected_papers`
+       - 外部論文收件掃描：`scan_inbox_papers`
+       - 外部文獻元數據治理入庫：`ingest_external_papers`
        - 雙欄轉譯清洗：`convert_pdfs_to_markdown`
        - 建立向量索引：`build_paper_index`
        - 語意事實檢索：`search_paper_chunks`

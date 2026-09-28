@@ -404,17 +404,20 @@ def save_and_render_tracking(tracking_data: Dict[str, Any]):
     lines.append("---\n")
     lines.append("## 三、尚未提供之訂閱文獻 PDF（待向校園圖書館調閱）\n")
     if pend_list:
-        lines.append(f"> 💡 **【研究者調閱指引】**：請透過大學圖書館電子資料庫整合查詢或校園 VPN，依據下方 DOI 連結下載全文，並以**建議檔名**儲存至 `01_papers/raw_pdf/`。完成後執行 `python scripts/fetch_openalex.py track {seq_id}`，系統將自動感知並更新本追蹤表！\n")
-        lines.append("| 編號 | 論文篇名 | 作者/年份 | 發表期刊 (Source) | DOI 調閱連結 | 建議存放檔名 |")
+        lines.append(f"> 💡 **【研究者調閱指引】**：請透過大學圖書館電子資料庫整合查詢、校園 VPN 或 Google Scholar 尋找開放典藏版本，依據下方連結下載全文，並以**建議檔名**儲存至 `01_papers/raw_pdf/`。完成後執行 `python scripts/fetch_openalex.py track {seq_id}`，系統將自動感知並更新本追蹤表！\n")
+        lines.append("| 編號 | 論文篇名 | 作者/年份 | 發表期刊 (Source) | 調閱與檢索連結 | 建議存放檔名 |")
         lines.append("| :---: | :--- | :---: | :--- | :--- | :--- |")
         for item in pend_list:
             t = item.get("title", "")
             ay = f"{item.get('first_author', '')} ({item.get('year', '')})"
             src = item.get("source", "")
             doi = item.get("doi", "")
-            doi_link = f"[{doi}]({doi})" if doi.startswith("http") else doi
+            doi_link = f"[DOI 官網]({doi})" if doi.startswith("http") else doi
+            scholar_url = f"https://scholar.google.com/scholar?q={urllib.parse.quote(t)}"
+            scholar_link = f"[Google Scholar 檢索]({scholar_url})"
+            link_cell = f"{doi_link} ｜ {scholar_link}" if doi.startswith("http") else scholar_link
             sug = item.get("suggested_filename", "")
-            lines.append(f"| {item.get('index', '')} | {t} | {ay} | `{src}` | {doi_link} | `{sug}` |")
+            lines.append(f"| {item.get('index', '')} | {t} | {ay} | `{src}` | {link_cell} | `{sug}` |")
         lines.append("")
     else:
         lines.append("🎉 *所有採納之訂閱文獻皆已全數入庫，無待調閱項目！*\n")
@@ -712,6 +715,10 @@ def search_candidate_papers(
 
         abstract_text = reconstruct_abstract(item.get("abstract_inverted_index"))
 
+        scholar_url = f"https://scholar.google.com/scholar?q={urllib.parse.quote(title)}"
+        scholar_link = f"[Google Scholar 檢索]({scholar_url})"
+        doi_link = f"[{doi}]({doi})" if doi.startswith("http") else doi
+
         record = {
             "index": idx,
             "title": title,
@@ -723,6 +730,7 @@ def search_candidate_papers(
             "is_oa": bool(is_oa and pdf_url),
             "pdf_url": pdf_url,
             "openalex_id": item.get("id"),
+            "scholar_url": scholar_url,
             "abstract": abstract_text,
             "status": "pending"
         }
@@ -734,7 +742,8 @@ def search_candidate_papers(
             f"- **作者與年份**：{first_author} ({pub_year}) | **被引用數**：{cited_count} 次",
             f"- **審查狀態**：`[ ]` 保留待定 (Pending)",
             f"- **全文狀態**：{oa_status_text}",
-            f"- **DOI 直連**：{doi}",
+            f"- **DOI 直連**：{doi_link}",
+            f"- **Google Scholar**：{scholar_link}",
             "- **摘要 (Abstract)**：",
             f"  > {abstract_text}\n",
             "---\n"
@@ -926,12 +935,13 @@ def review_candidate_papers(file_arg: Optional[str] = None):
         yr = year_m.group(1) if year_m else ""
         oa_st = oa_m.group(1) if oa_m else ""
         doi = doi_m.group(1) if doi_m else ""
-        ab = abs_m.group(1) if abs_m else "無摘要"
+        scholar_url = f"https://scholar.google.com/scholar?q={urllib.parse.quote(item['title'])}"
 
         print(f"\n[{idx_cursor + 1}/{len(paper_sections)}] 目前審查狀態：【{status_desc}】")
         print(f"📖 篇名：{item['title']}")
         print(f"🏛️ 來源：{src} | {yr} | 全文：{oa_st}")
         print(f"🔗 DOI ：{doi}")
+        print(f"🔍 檢索：{scholar_url}")
         print(f"📝 摘要：{ab[:220]}..." if len(ab) > 220 else f"📝 摘要：{ab}")
 
         prompt = f"👉 請輸入審查決策 [+/y:採納, -/n:排除, k/空白:保留, b:上一篇, Enter:跳過, q:儲存離開]: "
@@ -1027,6 +1037,7 @@ def get_candidate_papers_summary(file_arg: Optional[str] = None) -> Dict[str, An
         abs_m = re.search(r"- \*\*摘要 \(Abstract\)\*\*：\s*\n\s*>\s*([^\n]+)", sec_text)
 
         status_desc = "採納 [+]" if std_mark == '+' else ("排除 [-]" if std_mark == '-' else "待定 [ ]")
+        scholar_url = f"https://scholar.google.com/scholar?q={urllib.parse.quote(title)}"
 
         papers.append({
             "index": idx,
@@ -1037,6 +1048,7 @@ def get_candidate_papers_summary(file_arg: Optional[str] = None) -> Dict[str, An
             "authors_year": year_m.group(1).strip() if year_m else "",
             "oa_status": oa_m.group(1).strip() if oa_m else "",
             "doi": doi_m.group(1).strip() if doi_m else "",
+            "scholar_url": scholar_url,
             "abstract": abs_m.group(1).strip() if abs_m else ""
         })
 
@@ -1322,9 +1334,11 @@ def download_selected_papers(file_arg: Optional[str] = None):
     if subscription_pending_papers:
         print(f"\n💡 【尚未提供之訂閱文獻調閱清單】：")
         for p_item in subscription_pending_papers:
+            scholar_url = f"https://scholar.google.com/scholar?q={urllib.parse.quote(p_item['title'])}"
             print(f"  • [{p_item['index']}] {p_item['title']}")
-            print(f"    DOI ：{p_item['doi']}")
-            print(f"    請下載並命名為：01_papers/raw_pdf/{p_item['suggested_filename']}\n")
+            print(f"    DOI 官網直連   ：{p_item['doi']}")
+            print(f"    Google Scholar ：{scholar_url}")
+            print(f"    請下載並命名為 ：01_papers/raw_pdf/{p_item['suggested_filename']}\n")
         print(f"放入檔案後，請執行持續追蹤指令：python scripts/fetch_openalex.py track {seq_str}")
 
 
