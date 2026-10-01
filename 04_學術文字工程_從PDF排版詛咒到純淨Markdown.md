@@ -55,40 +55,6 @@ puppeteer:
 為什麼會這樣？這並非大型語言模型（LLM）的智力不足，而是因為：
 > **「PDF 格式最初的誕生目標，是為了在任何螢幕與印表機上達成 100% 精準的視覺排版再現，它根本不是為了讓電腦理解『文字語意』而設計的！」**
 
-```mermaid
-flowchart TD
-    subgraph RawCurse["原始學術 PDF（排版詛咒干擾）"]
-        R1["雙欄排版橫向跨讀錯亂"]
-        R2["每頁刺入期刊名、卷期與頁碼噪音"]
-        R3["行尾連字符破壞字詞（inter- \n vention）"]
-        R4["文末 10 頁龐大 References 清單（佔 30% 篇幅）"]
-    end
-
-    subgraph AttentionDistraction["大模型注意力機制崩潰"]
-        A1["分散注意力（Attention Heads Dilution）"]
-        A2["中間遺忘（Lost in the Middle）致命傷"]
-        A3["吃掉數萬 Tokens 寶貴配額"]
-        A4["誤將前人參考文獻當成本文結論"]
-    end
-
-    subgraph TextEngineering["學術文字工程管線 (extract_pdf_to_md.py)"]
-        T1["PyMuPDF / pymupdf4llm 雙欄閱讀順序重構"]
-        T2["章節感知截斷：精準切除文末 References 雜音"]
-        T3["標題層級自動恢復（# 一級標題 / ## 二級標題）"]
-        T4["GFM 表格保真還原與連字符消除"]
-    end
-
-    subgraph CleanCorpus["純淨高密度 Markdown (extracted_text/*.md)"]
-        C1["語意自然連貫，體積縮減 70%～85%"]
-        C2["保留大綱層級，為第五週 RAG 語意切塊打下堅實地基"]
-    end
-
-    RawCurse --> AttentionDistraction
-    RawCurse --> TextEngineering
-    TextEngineering --> CleanCorpus
-
-```
-
 ### 本週核心主旨：學術文字工程（Academic Text Engineering）
 
 本週課程的核心任務，是要帶領大家全面攻克 PDF 的排版詛咒，掌握專業級的 **「學術文字工程（Academic Text Engineering）」**。
@@ -134,94 +100,28 @@ ET
 
 這段指令的白話意義僅僅是：*「在頁面橫坐標 72.00、縱坐標 712.50 的位置，用 12 號字型畫出這串英文字元」*。
 
-因為 PDF 只關心字元「畫在哪裡好看」，它天生喪失了語言的**「語意連續性（Semantic Continuity）」**。當我們使用傳統的純文字讀取工具時，程式只是依照坐標由上而下掃過，這在一般單欄文件尚可勉強應付，但一旦遇到國際學術期刊，便會引發致命的四大排版詛咒！
+因為 PDF 只關心字元「畫在哪裡好看」，它天生喪失了語言的 **「語意連續性（Semantic Continuity）」**。當我們使用傳統的純文字讀取工具時，程式只是依照坐標由上而下掃過，這在一般單欄文件尚可勉強應付，但一旦遇到國際學術期刊，便會引發致命的四大排版詛咒！
 
 ---
 
-### 1.2 學術期刊四大「排版詛咒」實例剖析
+### 1.2 學術期刊四大「排版詛咒」
 
-#### 詛咒一：雙欄排版橫向跨讀（Two-Column Cross-Reading）
-大多數國際高影響力期刊（如 Elsevier、Springer、IEEE、ACM、Taylor & Francis）為了提高印刷空間利用率，普遍採用雙欄（Two-column）排版。
+學術期刊在轉化為純文字輸入大型語言模型（LLM）時，常見以下四大底層排版問題，必須透過文字工程予以解析與清洗：
 
-若文字抽取程式未做版面幾何辨識，只依水平方向由左至右逐行讀取，將引發災難性的左右欄交錯拼貼：
-
-```text
-【人類眼中的閱讀順序】：
-[左欄第 1 行] Artificial intelligence agents have demonstrated significant potential in supporting
-[左欄第 2 行] graduate students through the challenging phases of thesis literature review.
-[右欄第 1 行] Furthermore, empirical findings indicate that reflective journaling reduces
-[右欄第 2 行] cognitive load when paired with structured automated scaffolding systems.
-
-【未經處理的抽取結果（左右欄穿插拼貼）】：
-Artificial intelligence agents have demonstrated significant potential in supporting Furthermore, empirical findings indicate that reflective journaling reduces graduate students through the challenging phases of thesis literature review. cognitive load when paired with structured automated scaffolding systems.
-```
-
-可以看到，兩個原本完全獨立的主題（左欄談 AI Agent 潛力、右欄談反思日記降載），在模型眼裡被混成了一團不可理解的胡言亂語，徹底摧毀了大型語言模型的推理能力！
+1. **雙欄排版橫向跨讀（Two-Column Cross-Reading）**：
+   多數期刊採雙欄排版，若未經版面幾何辨識而直接按水平坐標由左至右逐行讀取，會造成左右兩欄句子交錯拼貼，嚴重破壞語意因果關係與上下文連貫性。
+2. **頁首頁尾重複刺入（Running Headers & Footers Contamination）**：
+   每頁頂部與底部的期刊名、卷期、DOI、版權宣告與頁碼等雜訊，會在翻頁處穿插於段落句子中間，打碎前後文長距離依賴脈絡。
+3. **行末連字符號硬斷行（Hyphenation Splitting）**：
+   為維持齊行對齊而在行末截斷單字（如 `inter-` 換行接 `vention`），若未自動進行反連字（De-hyphenation）拼接還原，會被模型視為破碎無效生詞，損害詞向量嵌入比對品質。
+4. **文末龐大參考文獻雜音（References Noise）**：
+   論文文末的數十至上百筆引用文獻往往佔據 25%～35% 篇幅，不僅浪費大量 Context Window 配額，更易引發長文本「中間遺忘（Lost in the Middle）」效應，並誘發模型將前人文獻誤認為本文研究結論的學術幻覺。
 
 ---
 
-#### 詛咒二：頁首頁尾重複刺入（Running Headers & Footers Contamination）
-學術期刊每一頁頂部通常印有期刊名稱、卷期、ISSN、DOI 網址與出版年份；底部則印有頁碼與出版社版權宣告。
+## 第二節：Markdown 語意優勢與語法說明
 
-在傳統文字抽取中，每一頁翻頁之處，正文句子都會被這些出版雜訊粗暴切斷：
-
-```text
-...the experimental intervention was conducted over a period of twelve
-Journal of Computer Assisted Learning, Vol. 39, No. 4, pp. 1120-1135, ISSN: 1365-2729
-weeks, during which graduate participants submitted weekly reflection logs...
-```
-
-這種穿插直接打碎了前後文的長距離依賴脈絡，更會讓 Agent 誤將期刊名稱當成實驗介入的關鍵字！
-
----
-
-#### 詛咒三：行末連字符號硬斷行（Hyphenation Splitting）
-英文學術論文為了維持雙欄兩側對齊（Justified Alignment），單字在行尾常被強制截斷並加上連字號（`-`），例如 `trans-` 換行接 `formation`、`cog-` 換行接 `nitive`。
-
-模型若未做「反連字處理（De-hyphenation）」，會將其視為兩個無效的生僻詞，直接破壞語意向量嵌入（Embedding）的比對品質。
-
----
-
-#### 詛咒四：龐大的參考文獻雜音（References Noise）
-這是學術文獻探討中**最嚴重的致命傷**！
-
-一篇 15 至 25 頁的正式國際期刊論文，文末的參考文獻清單（References / Bibliography）往往高達 60 到 120 筆，佔據整篇論文 **25% 乃至 35% 以上的篇幅**（相當於 3,000 至 8,000 個 Tokens）。
-
-##### 參考文獻清單對 LLM 的三大致命打擊：
-1. **白白吃掉寶貴的 Context Window 配額**：10 篇論文的 References 清單就高達數萬字，大幅增加 API 呼叫成本與模型推論時間。
-2. **引發「中間遺忘（Lost in the Middle）」效應**：心理語言學與 AI 實證研究顯示，大語言模型對長文本的注意力呈「U 型分佈」——對開頭與結尾的注意力最強，中間最容易遺忘。當一篇論文的最後 30% 全被密密麻麻的「人名、年代、書名」佔據時，模型會將其最強的注意力資源完全浪費在無效的清單上，進而遺忘前文的核心研究發現！
-3. **誘發嚴重的學術幻覺（Hallucination）**：模型在總結這篇論文的貢獻時，極易將文末 References 中前人論文的標題，誤認為是當前這篇論文的實驗結論！
-
-```mermaid
-xychart-beta
-    title "長文本上下文注意力強度分佈（U 型曲線與 References 浪費）"
-    x-axis ["文獻開頭 (Abstract)", "研究背景", "研究方法 (Method)", "統計實驗結果", "討論與反思", "文末 References 區間"]
-    y-axis "模型注意力強度 (Attention Level)" 0 --> 100
-    line [95, 45, 35, 40, 50, 92]
-```
-
-如上圖所示，如果我們不將文末的 References 清除，模型尾端高達 92% 的注意力精華，將被毫無價值的引用書單無情掠奪！
-
----
-
-## 第二節：學術文字工程工具選型與 Markdown 語意優勢
-
-### 2.1 Python PDF 工具庫深度評比
-
-為了破解上述四大排版詛咒，我們需要挑選合適的工程工具。在 Python 生態系中，常見的 PDF 函式庫表現如下：
-
-| 工具庫名稱 | 底層核心 | 處理 30 頁雙欄 PDF 速度 | 雙欄閱讀順序還原能力 | 標題與表格保真度 | 結論與選型建議 |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **PyPDF2 / pypdf** | 純 Python | 極慢（約 4～8 秒） | ❌ 無（僅依坐標粗暴水平提取） | ❌ 標題遺失、表格坍塌成碎片 | **不合格**：僅適合簡單單欄文本。 |
-| **pdfplumber** | 基於 pdfminer | 慢（約 6～12 秒） | ⚠️ 需手動撰寫大量邊界幾何判定 | ⭕ 幾何表格框線辨識良好 | **備選**：適合特定複雜財務表格，但日常文獻處理太慢。 |
-| **PyMuPDF (fitz)** | 高效能 C (MuPDF) | ⚡ 極快（約 0.2 秒） | ⭕ 優秀（提供強大 blocks/spans 幾何分析） | ⭕ 字型大小與粗體保留完整 | **優良基石**：專案的核心底層後盾。 |
-| **`pymupdf4llm`** | PyMuPDF 延伸模組 | ⚡ 極快（約 0.3 秒） | 🏆 **完美（專為 LLM 語意重構設計）** | 🏆 **自動產出 GitHub GFM Markdown** | **首選標準**：本專案採用之官方推薦工具！ |
-
-本專案全面採用 **`PyMuPDF` 結合 `pymupdf4llm`**，能在數百毫秒內自動計算字元群聚（Clustering）、還原雙欄閱讀順序，並將字型大小自動映射為 Markdown 標題標籤！
-
----
-
-### 2.2 為什麼堅持使用 Markdown 作為學術語意載體？
+### 2.1 為什麼堅持使用 Markdown 作為學術語意載體？
 
 在將 PDF 轉譯為純文字時，我們絕不輸出為無結構的 `.txt`，而是嚴格要求轉譯為 **Markdown（`.md`）**。
 
@@ -235,6 +135,295 @@ Markdown 對於學術研究 Agent 具有四大無可替代的戰略優勢：
    一份 25 頁的 PDF 原件大小約 3MB 至 8MB；轉譯為純淨 Markdown 後，檔案體積通常僅剩 40KB 到 80KB，體積縮減超過 **90%**，不僅載入速度呈指數級飛躍，更徹底免除了二進位解析的記憶體開銷。
 4. **與第五週本機 RAG 向量切塊（Chunking）無縫對齊**：
    在即將到來的第五週中，我們將學習「標題感知切塊（Heading-aware Chunking）」。Markdown 的標題符號就是最天然、最完美的語意切片分界線！
+
+---
+
+### 2.2 Markdown 文件基礎語法
+
+Markdown 是一種輕量級標記式語言（Lightweight Markup Language），由 John Gruber 於 2004 年創立，其核心設計哲學在於「易讀易寫（Readability & Writability）」——即使在未經渲染的純文字原始碼狀態下，人類與大型語言模型（LLM）都能清晰辨識其語意結構。
+
+基礎語法構成了一篇 Markdown 文件的骨架與基本排版標記，包括標題、文字強調、水平分隔線、超連結與圖片以及清單：
+
+#### 1. 標題層級（Headings）
+使用 `#` 號宣告標題層級，`#` 與標題文字之間必須保留一個半形空格。標題能建立文檔的骨架大綱（Outline），是 LLM 進行章節定位與向量切塊（Chunking）的核心依據：
+
+**語法原始碼：**
+```markdown
+# 一級標題（文件主題 / 論文篇名）
+## 二級標題（主要章節，如文獻探討、研究方法）
+### 三級標題（子章節，如研究對象、測量工具）
+#### 四級標題（細部條目）
+##### 五級標題
+###### 六級標題
+```
+
+**實際呈現效果：**
+> <div style="border-left: 4px solid #1a73e8; padding-left: 14px; margin: 8px 0;">
+>   <div style="font-size: 1.55em; font-weight: bold; line-height: 1.3; margin: 6px 0;">一級標題（文件主題 / 論文篇名）</div>
+>   <div style="font-size: 1.3em; font-weight: bold; line-height: 1.3; margin: 6px 0; border-bottom: 1px solid #eaecef; padding-bottom: 4px;">二級標題（主要章節，如文獻探討、研究方法）</div>
+>   <div style="font-size: 1.15em; font-weight: bold; line-height: 1.3; margin: 6px 0;">三級標題（子章節，如研究對象、測量工具）</div>
+>   <div style="font-size: 1.0em; font-weight: bold; line-height: 1.3; margin: 4px 0;">四級標題（細部條目）</div>
+>   <div style="font-size: 0.9em; font-weight: bold; line-height: 1.3; margin: 4px 0;">五級標題</div>
+>   <div style="font-size: 0.85em; font-weight: bold; color: #586069; margin: 4px 0;">六級標題</div>
+> </div>
+
+> [!TIP]
+> **寫作規範**：一份文檔應嚴格維持樹狀層級遞進，避免跨級跳躍（例如由 `##` 直接跳至 `####`），以確保 Agent 能正確建構語意大綱樹。
+
+#### 2. 文字內聯強調與樣式（Inline Formatting）
+用於強調關鍵字、專業術語或變數：
+
+| 語法格式 | 原始碼範例 | 實際呈現效果 | 適用情境 |
+| :--- | :--- | :--- | :--- |
+| **粗體** | `**統計顯著性**` | **統計顯著性** | 重點概念、統計結論 |
+| *斜體* | `*p* < .05` 或 `*et al.*` | *p* < .05 / *et al.* | 統計符號、拉丁外來語、期刊書名 |
+| ***粗斜體*** | `***重要核心假設***` | ***重要核心假設*** | 極度重要之核心界定 |
+| ~~刪除線~~ | `~~舊版檢定方法~~` | ~~舊版檢定方法~~ | 標示修訂或廢除之觀點 |
+| `行內程式碼` | `` `extract_pdf_to_md.py` `` | `extract_pdf_to_md.py` | 腳本檔名、函式、變數名稱 |
+
+**綜合範例原始碼：**
+```markdown
+經多元迴歸檢定，該變項達 **統計顯著性**（*p* < .05），且由 `extract_pdf_to_md.py` 處理之結果具備 ***高度穩定度***。
+```
+
+**實際呈現效果：**
+> 經多元迴歸檢定，該變項達 **統計顯著性**（*p* < .05），且由 `extract_pdf_to_md.py` 處理之結果具備 ***高度穩定度***。
+
+#### 3. 水平分隔線（Horizontal Rules）
+使用獨立成行且連續的三個或以上連字號 `---`、星號 `***` 或底線 `___`，能產生一條視覺分割線，適合用於主要段落切換或上下文轉折：
+
+**語法原始碼：**
+```markdown
+文獻探討第一部分探討認知負荷理論的演進...
+
+---
+
+文獻探討第二部分轉向探討 AI Agent 鷹架支架之設計...
+```
+
+**實際呈現效果：**
+> 文獻探討第一部分探討認知負荷理論的演進...
+> 
+> ---
+> 
+> 文獻探討第二部分轉向探討 AI Agent 鷹架支架之設計...
+
+#### 4. 超連結與圖片嵌入（Links & Images）
+在 Markdown 中，連結與圖片的語法格式高度一致，圖片僅在最前方多一個驚嘆號 `!`：
+
+**語法原始碼：**
+```markdown
+請參閱 [CrossRef 官方 API 規範](https://api.crossref.org/) 以獲取詳細欄位說明。
+
+![PRISMA 2020 文獻篩選流程圖](figures/prisma_flowchart.png "PRISMA 篩選流程")
+```
+
+**實際呈現效果：**
+> 請參閱 [CrossRef 官方 API 規範](https://api.crossref.org/) 以獲取詳細欄位說明。
+> 
+> ![PRISMA 2020 文獻篩選流程圖](figures/prisma_flowchart.png "PRISMA 篩選流程")
+> *（註：若圖檔存在於指定本機或網路路徑則直接渲染圖片；若路徑無圖則如上顯示包含邊框與替代文字之圖形符號）*
+
+#### 5. 清單與待辦工作清單（Lists & Task Lists）
+
+##### (1) 無序清單（Unordered Lists）
+使用 `-`、`*` 或 `+` 開頭，後接半形空格。縮排 2 至 4 個空格可建立巢狀子清單：
+
+**語法原始碼：**
+```markdown
+- 文獻探討核心維度
+  - 認知負荷理論（Cognitive Load Theory）
+  - 支架鷹架理論（Scaffolding Theory）
+- 實證研究設計
+```
+
+**實際呈現效果：**
+> - 文獻探討核心維度
+>   - 認知負荷理論（Cognitive Load Theory）
+>   - 支架鷹架理論（Scaffolding Theory）
+> - 實證研究設計
+
+##### (2) 有序清單（Ordered Lists）
+使用數字加半形句點 `1.` 開頭，數字順序會自動編排：
+
+**語法原始碼：**
+```markdown
+1. 收集並篩選文獻候選名單
+2. 進行外部文獻元數據逆向解析
+3. 執行 PDF 雙欄重構與 References 截斷
+```
+
+**實際呈現效果：**
+> 1. 收集並篩選文獻候選名單
+> 2. 進行外部文獻元數據逆向解析
+> 3. 執行 PDF 雙欄重構與 References 截斷
+
+##### (3) GFM 待辦任務清單（Task Lists）
+在清單後加上 `[ ]`（未完成）或 `[x]`（已完成），非常適合用於論文進度追蹤與審查標記：
+
+**語法原始碼：**
+```markdown
+- [x] 完成第一階段 OpenAlex API 關鍵字檢索
+- [x] 下載候選論文全文 PDF
+- [ ] 執行學術文字工程轉譯純淨 Markdown
+```
+
+**實際呈現效果：**
+> - [x] 完成第一階段 OpenAlex API 關鍵字檢索
+> - [x] 下載候選論文全文 PDF
+> - [ ] 執行學術文字工程轉譯純淨 Markdown
+
+---
+
+### 2.3 Markdown 文件中級語法
+
+中級語法主要用於處理複雜的文獻引述、多維數據矩陣以及可執行的程式邏輯，是學術論文與技術文件表達深度的核心手段：
+
+#### 1. 引用區塊與警告提示（Blockquotes & Alerts）
+使用 `>` 建立引用區塊，可用於引用學術前人原話或論文摘要：
+
+**語法原始碼：**
+```markdown
+> 認知負荷理論指出，工作記憶（Working Memory）的容量極其有限，
+> 因此教學設計必須極力降低無效認知負荷（Extraneous Cognitive Load）。
+> —— Sweller (1988)
+```
+
+**實際呈現效果：**
+> 認知負荷理論指出，工作記憶（Working Memory）的容量極其有限，
+> 因此教學設計必須極力降低無效認知負荷（Extraneous Cognitive Load）。
+> —— Sweller (1988)
+
+在 GitHub / Antigravity 環境中，更支援結構化的 GitHub Alerts（警告提示塊），能讓 Agent 與讀者瞬間辨識資訊的優先級別：
+
+**語法原始碼：**
+```markdown
+> [!NOTE]
+> 說明背景脈絡或實作補充資訊。
+
+> [!TIP]
+> 提供效能最佳化或效率操作技巧。
+
+> [!IMPORTANT]
+> 強調必須遵守的學術規格或關鍵原則。
+
+> [!WARNING]
+> 提醒潛在風險、格式衝突或相容性問題。
+```
+
+**實際呈現效果：**
+> [!NOTE]
+> 說明背景脈絡或實作補充資訊。
+
+> [!TIP]
+> 提供效能最佳化或效率操作技巧。
+
+> [!IMPORTANT]
+> 強調必須遵守的學術規格或關鍵原則。
+
+> [!WARNING]
+> 提醒潛在風險、格式衝突或相容性問題。
+
+#### 2. 結構化表格（GFM Tables）
+表格是學術論文傳遞實驗結果、樣本特徵與文獻矩陣的最佳工具。以管道符號 `|` 分隔欄位，第二行使用虛線 `-` 定義表頭，並透過冒號 `:` 控制對齊方向：
+- `:---`：靠左對齊（預設，適合文字敘述）
+- `:---:`：置中對齊（適合年份、狀態、作者姓氏）
+- `---:`：靠右對齊（適合數值、統計數據）
+
+**語法原始碼：**
+```markdown
+| 變項名稱 | 實驗組 ($N=45$) | 控制組 ($N=45$) | $t$ 檢定值 | $p$ 值 |
+| :--- | :---: | :---: | ---: | ---: |
+| 學習成效後測 | 84.5 (SD=6.2) | 76.2 (SD=8.1) | 5.42 | < .001 |
+| 認知負荷量表 | 2.31 (SD=0.4) | 3.85 (SD=0.6) | -14.18 | < .001 |
+```
+
+**實際呈現效果：**
+
+| 變項名稱 | 實驗組 ($N=45$) | 控制組 ($N=45$) | $t$ 檢定值 | $p$ 值 |
+| :--- | :---: | :---: | ---: | ---: |
+| 學習成效後測 | 84.5 (SD=6.2) | 76.2 (SD=8.1) | 5.42 | < .001 |
+| 認知負荷量表 | 2.31 (SD=0.4) | 3.85 (SD=0.6) | -14.18 | < .001 |
+
+#### 3. 程式碼區塊（Fenced Code Blocks）
+使用三個反引號包裹多行程式碼，並在第一行反引號後方明確標示語言名稱（如 `python`、`bash`、`json`、`markdown`），以啟用精準的語法著色：
+
+**語法原始碼：**
+````markdown
+```python
+def clean_academic_text(raw_text: str) -> str:
+    """消除行尾斷詞連字符號並回傳乾淨文本"""
+    import re
+    return re.sub(r'(\w+)-\s*\n\s*(\w+)', r'\1\2', raw_text)
+```
+````
+
+**實際呈現效果：**
+```python
+def clean_academic_text(raw_text: str) -> str:
+    """消除行尾斷詞連字符號並回傳乾淨文本"""
+    import re
+    return re.sub(r'(\w+)-\s*\n\s*(\w+)', r'\1\2', raw_text)
+```
+
+---
+
+### 2.4 Markdown 文件進階語法
+
+進階語法賦予 Markdown 表達複雜學術理論模型與正式學術出版規格的能力：
+
+#### 1. 學術數學公式（LaTeX / KaTeX）
+Markdown 支援與 KaTeX / MathJax 引擎深度整合，能直接排版專業學術公式：
+
+##### (1) 行內公式（Inline Math）
+使用單個錢字號 `$ ... $` 包裹於文字行中：
+
+**語法原始碼：**
+```markdown
+經變異數分析，組間主要效果達顯著水準 $F(1, 88) = 29.38, p < .001$，判定係數為 $R^2 = 0.45$。
+```
+
+**實際呈現效果：**
+> 經變異數分析，組間主要效果達顯著水準 $F(1, 88) = 29.38, p < .001$，判定係數為 $R^2 = 0.45$。
+
+##### (2) 獨立區塊公式（Block Math）
+使用雙錢字號 `$$ ... $$` 獨立成行包裹，例如效果量計算公式：
+
+**語法原始碼：**
+```markdown
+$$d = \frac{\bar{X}_1 - \bar{X}_2}{s_{\text{pooled}}}$$
+```
+
+**實際呈現效果：**
+$$d = \frac{\bar{X}_1 - \bar{X}_2}{s_{\text{pooled}}}$$
+
+#### 2. 學術註腳（Footnotes）
+在內文中使用 `[^標籤]` 標記，並在段落下或文末提供對應解釋，非常適合補充非核心但重要的學術背景限制：
+
+**語法原始碼：**
+```markdown
+本研究採用準實驗研究法（Quasi-experimental Design）[^demo_fn]。
+
+[^demo_fn]: 由於高教教學現場無法完全隨機分派班級，故採取非對等控制組前後測設計。
+```
+
+**實際呈現效果：**
+> 本研究採用準實驗研究法（Quasi-experimental Design）[^demo_fn]。
+> 
+> <div style="font-size: 0.9em; color: #555; border-top: 1px solid #ddd; padding-top: 6px; margin-top: 10px;">
+>   <strong>[^demo_fn]</strong>：由於高教教學現場無法完全隨機分派班級，故採取非對等控制組前後測設計。（文末或頁底將自動渲染並支援點擊跳轉）
+> </div>
+
+---
+
+### 2.5 學術 Markdown 編寫最佳實踐
+
+在論文寫作與 AI Agent 協同研究場景中，編寫高質量的 Markdown 應遵循以下最佳實踐：
+
+1. **語意優先於視覺排版**：避免使用無語意的連續空行或非標準符號來達成排版目的，堅持以標準 Markdown 標籤引導結構。
+2. **段落之間空一行**：在 Markdown 中，換行必須在兩段文字之間保留一個完整空行，或在行末輸入兩個空格，否則渲染引擎會將其合併為同一行。
+3. **保持純文字易讀性**：Markdown 的最大價值在於「原始碼可直接閱讀」。編排表格與清單時，請盡可能對齊邊界，讓研究者直接在文字編輯器中閱讀時亦賞心悅目。
+4. **樹狀標題階層嚴格對齊**：確保標題層級不跳級（`#` -> `##` -> `###`），利於後續本機 RAG 向量切塊演算法依大綱建立語意索引。
 
 ---
 
