@@ -35,17 +35,39 @@ puppeteer:
 
 在經歷前四週的扎實訓練後，我們的文獻研究工作區已經建立起嚴整的資產管線：從第一週的 `PROJECT.md` 規格鎖定、第二週的 OpenAlex 智慧檢索與 PRISMA 追蹤、第三週的外部文獻 DOI 反查與收件治理，到第四週運用 `pymupdf4llm` 破解雙欄排版詛咒並截斷參考文獻雜訊，我們的手中已經累積了一批高度純淨、結構清晰的 Markdown 論文文本，妥善存放於 `01_papers/extracted_text/` 目錄中。
 
-然而，當研究者手握 20 篇、50 篇甚至上百篇論文全文時，一個極為嚴峻的工程與認知瓶頸隨即浮現：**我們該如何讓 AI Agent 精確查閱這些文獻？**
+然而，文獻資產就位僅僅是第一步。當研究者手握數十篇甚至上百篇論文、總文字量達數十萬字時，一個全新的核心工程瓶頸隨即浮現：**我們該如何讓 AI Agent 精確查閱這些文獻，在毫秒之間提取出確鑿的研究事實，而不是憑空想像或含糊帶過？**
 
-許多剛接觸生成式 AI 的研究生常有一種直覺想法：「現在的大型語言模型（如 Gemini 1.5/2.5 Pro）動輒支援 100 萬乃至 200 萬 Token 的超長上下文視窗（Context Window），我把幾十篇論文的 Markdown 檔案全部打包，一口氣貼進對話框不就解決了嗎？」
+面對龐大的文獻庫，單純依賴大模型的大容量上下文視窗並不等於掌握了精準的學術研究能力。學術寫作對於「證據出處」、「實驗樣本」與「統計數據」有著近乎苛刻的精準度要求。若缺乏專門的文獻導航與定位機制，研究者將難以約束模型的注意力邊界，亦無法在短時間內驗證 AI 回答的真實性。
 
-這種「全量灌入（Full-Context Ingestion）」的作法，在嚴肅的學術研究中已被證實是極度危險且低效的。當文本量達到數十萬字時，大模型會不可避免地面臨**長程注意力稀釋（Lost in the Middle 效應）**、**推論成本急遽飆升**，以及**跨論文事實雜交（Cross-Paper Hallucination）**等致命缺陷。模型極可能將 A 論文的樣本數（N=120）張冠李戴到 B 論文的實驗結論中，進而在文獻探討中產出看似頭頭之道、實則漏洞百出的偽造證據。
-
-為了解決這個根本性困局，本週我們將正式導入當代 AI 系統的核心架構——**檢索增強生成（Retrieval-Augmented Generation，簡稱 RAG）**。貫穿本週實作的核心箴言是：
+為了解決從「文本存放」到「精準知識提取」的關鍵跨越，本週我們將正式導入當代 AI 系統的核心架構——**檢索增強生成（Retrieval-Augmented Generation，簡稱 RAG）**。貫穿本週實作的核心箴言是：
 
 > **檢索不是為了取代閱讀，而是為了在浩瀚的文獻庫中，讓 AI 代理人精確定位客觀事實，實現有憑有據的事實錨定（Fact Grounding）。**
 
-在本週的課堂中，我們將深入剖析 RAG 的技術本質，探討如何針對學術論文進行「結構感知分塊（Structure-Aware Chunking）」；接著揭開本地倒排向量索引 `01_papers/vector_index.json` 的底層運作演算法，並透過 MCP 工具鏈驅動 Agent 執行毫秒級的文獻定位，最終建立起嚴格拒絕學術幻覺的「事實錨定引用防線」。
+在本週的課堂中，我們將為文獻工作區裝上專屬的語意導航雷達：
+1. **重構學術切塊思維**：探討如何順應學術論文的 IMRaD 篇章結構，實施高保真的「結構感知分塊（Structure-Aware Chunking）」。
+2. **打造本機雙檔解耦向量索引**：引入開源頂尖稠密檢索模型 `BAAI/bge-base-en-v1.5` 與 `sentence-transformers`，剖析 768 維稠密向量化與餘弦相似度演算法，在本地生成兼具深層語意理解與極速召回的雙檔解耦索引（`vector_index.json` + `vector_embeddings.npz`）。
+3. **驅動離線建庫與 Agent MCP 檢索**：運用本地終端腳本完成離線批次建庫，並驅動 Agent 調用 MCP 工具 `search_paper_chunks` 達成毫秒級的證據召回，建立起嚴格拒絕學術幻覺的「事實錨定引用防線」。
+
+---
+
+## 課前準備：套件安裝與嵌入模型環境確認
+
+在開始本週課程與檢索實作前，請確認本機 Python 環境已安裝神經向量嵌入套件：
+
+1. **安裝稠密向量檢索套件**：
+   打開終端機，執行以下安裝指令：
+   ```bash
+   pip install sentence-transformers numpy
+   ```
+2. **嵌入模型規格確認與本機硬體選型**：
+   本專案預設採用開源評測頂尖之稠密嵌入模型 **`BAAI/bge-base-en-v1.5`**（輸出 768 維度向量，權重僅約 438 MB），首次建置索引時系統將自動由 Hugging Face 下載模型權重至本機快取目錄。
+
+   > [!TIP]
+   > **本機硬體記憶體配置與模型選型評估（8GB vs 16GB+ RAM）：**
+   > - **`BAAI/bge-base-en-v1.5`（768 維度，~438 MB）**：推論載入僅需約 600 MB 記憶體，運算輕盈穩定，非常適合一般 8 GB RAM 之個人筆記型電腦。
+   > - **`BAAI/bge-m3`（1024 維度，~2.27 GB，560M 參數）**：雖然支援多語言，但反序列化與推論需要 >4.5 GB 可用 RAM。在可用記憶體有限的本機電腦上（如 8 GB RAM 機型）執行，極易因 Windows 虛擬記憶體耗盡而引發 `memory allocation failed`，甚至造成桌面視窗管理員崩潰或黑畫面。因此個人電腦推薦以 `bge-base-en-v1.5` 作為主力！
+3. **確認在庫 Markdown 文本**：
+   確認 `01_papers/extracted_text/` 目錄中已有第四週文字工程轉譯產出的純淨 Markdown 論文。
 
 ---
 
@@ -53,18 +75,7 @@ puppeteer:
 
 ### 1.1 大模型上下文的「幻象」與「現實」：為什麼「全量灌入」必然失效
 
-近年來，商業大模型廠商不斷宣傳超百萬 Token 的上下文容量，給許多研究者造成了一種「可以直接把整個圖書館倒給 AI」的樂觀錯覺。但在嚴謹的學術場域中，將多篇完整論文全量倒入 Prompt 會引發三大災難性後果：
-
-```mermaid
-flowchart TD
-    subgraph Fail["全量灌入模式（Full-Context Ingestion）的崩潰困境"]
-        A["50 篇論文全文<br/>（約 300,000 Token）"] --> B["一口氣倒入大模型 Context Window"]
-        B --> C1["注意集中兩端，中間大量遺忘<br/>（Lost in the Middle 效應）"]
-        B --> C2["交叉污染與跨篇張冠李戴<br/>（Cross-Document Hallucination）"]
-        B --> C3["推論成本呈平方級暴增<br/>（API 費用與延遲極高）"]
-        C1 & C2 & C3 --> D["產出不可靠的文獻綜整，引發學術誠信危機"]
-    end
-```
+近年來，商業大模型廠商不斷宣傳超百萬 Token 的上下文容量，給許多研究者造成了一種「可以直接把整個圖書館倒給 AI」的樂觀錯覺。許多剛接觸生成式 AI 的研究生常嘗試將幾十篇論文全文一次性打包貼入對話框，期望模型自動完成文獻探討。然而，在嚴謹的學術場域中，這種「全量灌入（Full-Context Ingestion）」的做法會引發三大災難性後果：
 
 1. **長程注意力稀釋與中間遺忘（Lost in the Middle）：**
    史丹佛大學與柏克萊大學的研究團隊（Liu et al., 2023）透過大量實證指出，現代 Transformer 架構的大型語言模型在處理超長文本時，其注意力分佈呈現顯著的 **「U 型曲線（U-shaped Attention Curve）」**。模型對於位於 Prompt 最開頭與最結尾的資訊具備極高的檢索召回率，但對於夾在中間 70% 的深層內容，其檢索準確率會呈現懸崖式暴跌。學術論文中最關鍵的研究細節——如統計檢定顯著性、共變數控制、實驗排除條件與研究限制——往往隱含在內文的中段，極易被模型直接「視而不見」。
@@ -79,25 +90,19 @@ flowchart TD
 
 在 RAG 架構下，電腦不需要把所有論文塞給大腦，而是將本機的 Markdown 論文庫建立為結構化的「外掛知識庫」。當研究者提出具體的學術問題時，系統先以極高的速度在知識庫中找出與該問題最相關的 3 至 5 個「精華段落（Relevant Chunks）」，並僅將這幾個段落作為「證據（Context Grounding）」提供給大型語言模型，命令模型：**「必須且只能依據下列提供的證據段落回答問題，並標註段落出處；若證據中未提及，嚴禁自行推測。」**
 
-```mermaid
-flowchart LR
-    subgraph Storage["步驟一：本地結構化索引"]
-        Raw["01_papers/extracted_text/*.md"] --> Chunk["語意切塊<br/>（Chunking）"]
-        Chunk --> Index[("01_papers/vector_index.json<br/>倒排向量索引庫")]
-    end
+學術級 RAG 的標準運作流程包含三大核心步驟：
 
-    subgraph Retrieve["步驟二：精準語意檢索"]
-        Query["研究者提問<br/>『各文獻如何測量認知負荷？』"] --> Search["MCP 工具調用<br/>search_paper_chunks"]
-        Index -.-> Search
-        Search --> TopK["召回 Top-3 關鍵段落<br/>（附帶篇名與章節標籤）"]
-    end
-
-    subgraph Grounding["步驟三：事實錨定推論"]
-        TopK --> LLM["大型推理模型<br/>（Gemini / Claude）"]
-        Query --> LLM
-        LLM --> Out["結構化回覆<br/>包含具體引證與精確出處錨點"]
-    end
-```
+1. **步驟一：本地結構化索引（離線終端建庫，不使用 MCP）**
+   - **讀取原始文本：** 掃描 `01_papers/extracted_text/*.md` 中的 Markdown 格式論文。
+   - **語意結構切塊（Chunking）：** 依據章節標題與自然段落邊界，將全文切分為保全完整脈絡的獨立區塊。
+   - **雙檔解耦儲存（Indexing）：** 由研究者於終端機執行本機建庫腳本，調用 `BAAI/bge-base-en-v1.5` 生成 `vector_index.json`（段落文字與章節元數據）與 `vector_embeddings.npz`（768 維二進位壓縮向量矩陣）。
+2. **步驟二：精準語意檢索（在線動態檢索，由 Agent 調用 MCP）**
+   - **研究問題輸入：** 研究者在對話視窗提出具體研究問題（例如：*「各文獻如何測量認知負荷？」*）。
+   - **MCP 工具調用：** Agent 於推理過程中動態調用 `search_paper_chunks` MCP 工具，將提問向量與本地向量庫進行高速矩陣內積運算。
+   - **召回關鍵段落：** 篩選出餘弦相似度最高的 Top-3 關鍵段落，並完整保留篇名、檔名與章節標籤。
+3. **步驟三：事實錨定推論（Grounding & Generation）**
+   - **邊界約束推論：** 將研究問題與召回的 Top-3 精華段落一同封裝送入大型推理模型（Gemini / Claude）。
+   - **生成可驗證結論：** 模型僅依據所提供的段落事實進行歸納回答，輸出包含明確章節出處與實證數據的結構化內容。
 
 透過 RAG 架構，我們為學術 Agent 建立了兩道不可逾越的事實防禦線：
 - **可驗證性（Verifiability）：** Agent 的每一句論斷，都伴隨著原始論文的檔名、所屬章節與原文引句，研究者只需點擊連結即可在 3 秒內完成人工核對。
@@ -107,13 +112,44 @@ flowchart LR
 
 在 RAG 系統的技術演進中，主要存在三種主流的文字匹配機制：
 
-| 檢索典範 | 代表技術與演算法 | 運作原理 | 學術場域的優勢 | 學術場域的局限 |
-| :--- | :--- | :--- | :--- | :--- |
-| **稀疏檢索（Sparse Retrieval）** | TF-IDF / BM25 / 倒排索引 | 計算字詞在段落中出現的頻率（TF）與在全庫中的稀有度（IDF）進行統計評分 | 對專有名詞、量表名稱（如 `NASA-TLX`）、統計術語（`ANCOVA`）、作者人名極度敏感且精確；無須神經網路，運算速度極快且完全在本機執行 | 無法辨識同義詞（例如搜尋 `cognitive burden` 找不到只寫 `mental workload` 的段落） |
-| **稠密向量檢索（Dense Retrieval）** | 語意嵌入向量（Embeddings）、餘弦相似度（Cosine Similarity） | 將文字透過神經網路投射為高維幾何向量（如 768 或 1536 維），計算向量間的夾角餘弦值 | 具備極強的深層語意理解能力，能夠進行概念映射、跨語言比對與同義置換 | 對精確代碼、罕見縮寫或數字不夠敏感；建立索引需要調用嵌入模型 API 或消耗本機 GPU 資源 |
-| **混合檢索（Hybrid Search）** | BM25 + Dense Embeddings + 重排序（Reranking） | 先以 BM25 確保關鍵字命中，再以向量餘弦補足語意相似度，透過加權融合評分 | 兼具術語精確命中與概念聯想，被視為工業級與專業科研 RAG 的黃金標準 | 系統架構較為複雜，索引體積與維護成本較高 |
+| 檢索典範 | 代表技術與演算法 | 經典代表文獻 | 運作原理 | 學術場域的優勢 | 學術場域的局限 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **稀疏檢索（Sparse Retrieval）** | TF-IDF / BM25 / 倒排索引 | Spärck Jones (1972);<br>Robertson & Zaragoza (2009) | 計算字詞在段落中出現的頻率（TF）與在全庫中的稀有度（IDF）進行統計評分 | 對專有名詞、量表名稱（如 `NASA-TLX`）、統計術語（`ANCOVA`）、作者人名極度敏感且精確；無須神經網路，運算速度極快且完全在本機執行 | 無法辨識同義詞（例如搜尋 `cognitive burden` 找不到只寫 `mental workload` 的段落） |
+| **稠密向量檢索（Dense Retrieval）** | 語意嵌入向量（Embeddings）、餘弦相似度（Cosine Similarity） | Karpukhin et al. (2020);<br>Lewis et al. (2020) | 將文字透過神經網路投射為高維幾何向量（如 768 或 1536 維），計算向量間的夾角餘弦值 | 具備極強的深層語意理解能力，能夠進行概念映射、跨語言比對與同義置換 | 對精確代碼、罕見縮寫或數字不夠敏感；建立索引需要調用嵌入模型 API 或消耗本機 GPU 資源 |
+| **混合檢索（Hybrid Search）** | BM25 + Dense Embeddings + 重排序（Reranking） | Cormack et al. (2009);<br>Gao et al. (2023) | 先以 BM25 確保關鍵字命中，再以向量餘弦補足語意相似度，透過加權融合評分 | 兼具術語精確命中與概念聯想，被視為工業級與專業科研 RAG 的黃金標準 | 系統架構較為複雜，索引體積與維護成本較高 |
 
-在本專案的輕量化開源教學實踐中，我們採用了一種**針對學術 Markdown 最佳化的本機倒排 TF-IDF 檢索引擎**。它無需依賴外部收費的向量資料庫（如 Pinecone 或 Weaviate），亦不需要在本機配置龐大的 PyTorch 環境，僅需純粹的 Python 標準庫即可在零延遲、零依賴、純本地的條件下，對數百篇 Markdown 論文提供絕佳的學術檢索精度。
+#### 典範代表文獻（標準 APA 格式）：
+
+##### 1. 稀疏檢索（Sparse Retrieval）
+- **Spärck Jones (1972)**
+  - Spärck Jones, K. (1972). A statistical interpretation of term specificity and its application in retrieval. *Journal of Documentation*, 28(1), 11–21. https://doi.org/10.1108/eb026526
+  - *定位說明：* 提出逆向文件頻率（IDF）核心統計原理，為現代資訊檢索與詞頻權重計算之奠基之作。
+- **Robertson & Zaragoza (2009)**
+  - Robertson, S., & Zaragoza, H. (2009). The probabilistic relevance framework: BM25 and beyond. *Foundations and Trends® in Information Retrieval*, 3(4), 333–389. https://doi.org/10.1561/1500000019
+  - *定位說明：* 系統化闡述 Okapi BM25 機率檢索演算法模型，為當前資訊檢索與開源搜尋引擎最廣泛採納之稀疏基準。
+
+##### 2. 稠密向量檢索（Dense Retrieval）
+- **Karpukhin et al. (2020)**
+  - Karpukhin, V., Oğuz, B., Min, S., Lewis, P., Wu, L., Edunov, S., Chen, D., & Yih, W.-t. (2020). Dense passage retrieval for open-domain question answering. In *Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing (EMNLP)* (pp. 6769–6781). Association for Computational Linguistics. https://doi.org/10.18653/v1/2020.emnlp-main.550
+  - *定位說明：* 提出雙編碼器（DPR）架構，確立以高維語意嵌入向量進行精準段落召回之神經網路檢索典範。
+- **Lewis et al. (2020)**
+  - Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-t., Rocktäschel, T., Riedel, S., & Kiela, D. (2020). Retrieval-augmented generation for knowledge-intensive NLP tasks. In *Advances in Neural Information Processing Systems (NeurIPS 2020)* (Vol. 33, pp. 9459–9474). Curran Associates, Inc.
+  - *定位說明：* 正式提出 RAG（檢索增強生成）架構之 NeurIPS 里程碑論文，首創端到端結合神經檢索與序列生成。
+
+##### 3. 混合檢索（Hybrid Search）
+- **Cormack, Clarke, & Buettcher (2009)**
+  - Cormack, G. V., Clarke, C. L. A., & Buettcher, S. (2009). Reciprocal rank fusion outperforms Condorcet and individual machine learning methods for information retrieval. In *Proceedings of the 32nd International ACM SIGIR Conference on Research and Development in Information Retrieval* (pp. 758–759). ACM. https://doi.org/10.1145/1571941.1572114
+  - *定位說明：* 提出倒數排名融合（RRF）演算法，為混合稀疏關鍵字與稠密向量多路召回時最通用且無需調參的排序融合技術。
+- **Gao et al. (2023)**
+  - Gao, Y., Xiong, Y., Gao, X., Jia, K., Pan, J., Bi, Y., Dai, Y., Sun, J., & Wang, H. (2023). Retrieval-augmented generation for large language models: A survey. *arXiv preprint arXiv:2312.10997*. https://doi.org/10.48550/arXiv.2312.10997
+  - *定位說明：* 全面綜述現代大型語言模型 RAG 系統架構，深入評估 BM25、Dense Embeddings 與 Cross-Encoder 重排序之多階段混合檢索管線。
+
+在本專案的本機 RAG 實踐中，我們採用專為學術文獻檢索打造的開源高精準度稠密模型——**`BAAI/bge-base-en-v1.5`**，搭配輕量高效的 **`sentence-transformers`** 框架。
+
+#### 為什麼選擇 `BAAI/bge-base-en-v1.5` 作為本機文獻檢索核心？
+1. **黃金性價比與硬體友善度（768 維度，~438 MB）**：相較於 560M 參數的龐大巨型模型，`bge-base-en-v1.5` 僅需約 600 MB 記憶體即可在一般 CPU 上極速運行，完全避免因可用記憶體不足引發的 Windows 系統崩潰或黑畫面。
+2. **高維稠密語意表徵（768 維 Dense Vectors）**：在權威 MTEB（Massive Text Embedding Benchmark）檢索排行榜名列前茅，能敏銳捕捉如 `mental workload` 與 `cognitive burden` 之間的深層同義語意，徹底打破關鍵字字面匹配的「語意鴻溝（Semantic Gap）」。
+3. **本機零資料外流與免雲端 API 成本**：直接於本機載入開源權重執行嵌入向量推論，既確保未發表論文與研究數據的絕對隱私，又完全免除外部收費向量資料庫（如 Pinecone、Weaviate）的雲端租用開銷。
 
 ---
 
@@ -147,51 +183,53 @@ Chunk #13:
 
 ### 2.2 學術結構感知分塊（Structure-Aware Chunking）
 
-為了解決這個痛點，本專案在 `scripts/paper_retriever_mcp.py` 與 `scripts/extract_pdf_to_md.py` 中實現了**「學術結構感知分塊（Structure-Aware Chunking）」**策略。
+為了解決這個痛點，本專案在 `scripts/paper_retriever_mcp.py` 與 `scripts/extract_pdf_to_md.py` 中實現了 **「學術結構感知分塊（Structure-Aware Chunking）」** 策略。
 
 學術論文具有高度標準化的章節架構（IMRaD：Introduction, Methods, Results, and Discussion）。結構感知分塊的核心原則為：
 1. **章節標題即語意邊界（Header-Preserved Boundaries）：** 將 Markdown 的二級與三級標題（`##`、`###`）視為不可跨越的語意屏障。當掃描到新標題時，立即封裝上一段區塊，並將新標題名稱（如 `Methodology > 2.3 Instruments`）寫入後續所有段落的元數據（Metadata）中。
 2. **段落語意單元保全（Paragraph Cohesion）：** 以自然段落（雙換行 `\n\n`）作為最小基礎單位。段落是學者闡述單一核心論點（Idea Unit）的自然邊界，絕不在段落中間任意橫向截斷。
 3. **極小碎屑過濾（Noise Filtering）：** 自動過濾詞數低於 15 至 20 個 Token 的破碎孤行（如孤立的圖表標題、頁碼殘渣或公式符號），避免垃圾區塊污染檢索空間。
 
-```mermaid
-flowchart TD
-    MD["01_papers/extracted_text/*.md<br/>（純淨 Markdown 文本）"] --> Scanner["逐行掃描器（Line-by-Line Scanner）"]
-    
-    Scanner --> Cond1{"是否為標題行？<br/>(# / ## / ###)"}
-    Cond1 -- 是 --> UpdateSec["更新 current_section 元數據<br/>清空前置文字緩衝區"]
-    Cond1 -- 否 --> Cond2{"是否為雙換行？<br/>(\n\n 段落邊界)"}
-    
-    Cond2 -- 是 --> EvalLen{"緩衝區詞數 >= 20？"}
-    EvalLen -- 是 --> CreateChunk["封裝為結構化 Chunk：<br/>{ file, section, text }"]
-    EvalLen -- 否 --> Drop["捨棄過短碎屑"]
-    
-    Cond2 -- 否 --> Buffer["將行文字加入暫存緩衝區"]
-    UpdateSec & CreateChunk --> ChunkList["加入全域語意區塊清單"]
-```
+### 2.3 文字與向量「雙檔解耦」架構剖析：`vector_index.json` 與 `vector_embeddings.npz`
 
-### 2.3 本地向量索引資料結構剖析：`vector_index.json`
+本專案採用 **「文字 / 向量雙檔解耦架構（Decoupled Dual-File Architecture）」** ，將論文的語意正文元數據與密集數學向量分別存放於專門優化的檔案格式中：
+-- **`01_papers/vector_index.json`（純文字結構化元數據庫）：** 儲存文獻目錄、增量快取時間戳（`file_states`）以及切分後的結構化段落正文（`chunks`）。
+- **`01_papers/vector_embeddings.npz`（NumPy 二進位密集矩陣）：** 儲存所有段落對應的 768 維 `BAAI/bge-base-en-v1.5` 高維稠密嵌入向量矩陣。
 
-在完成結構感知分塊後，系統會將所有論文的段落彙整，並在 `01_papers/` 目錄下生成專屬的本地檢索索引檔：`01_papers/vector_index.json`。
+#### 雙檔解耦架構的核心優勢
 
-讓我們拆解其底層 JSON 資料架構：
+1. **極致的檢索與載入效能（High-Performance Retrieval）：**
+   - 向量矩陣採用 NumPy 壓縮二進位格式儲存（1,000 個區塊僅約 3 MB），冷啟動讀取時間僅需 **2～5 毫秒（ms）**。
+   - 保持底層記憶體連續對齊，檢索時可直接以查詢向量與矩陣進行 BLAS/SIMD 硬體加速內積運算（`np.dot`），全庫餘弦相似度比對在 **1 毫秒內**即可瞬間完成。
+2. **人類可讀性與透明審計便利（Human-Readable & Auditable）：**
+   - 文字索引 `vector_index.json` 僅約 200～300 KB，完全排除了龐雜冗長的浮點數陣列。
+   - 研究者可隨時使用文字編輯器（如 VS Code）秒開檢視，直觀核對每篇論文的章節標籤、段落切分完整度與元數據，落實學術研究資料的透明可驗證性。
+3. **輕量支援時間戳增量更新（Efficient Incremental Caching）：**
+   - 元數據內嵌 `file_states` 紀錄，檢索引擎可迅速完成檔案狀態比對，僅針對異動文獻進行局部向量編碼與追加，大幅節省運算資源與等待時間。
+
+#### 1. 結構化元數據檔：`01_papers/vector_index.json`
 
 ```json
 {
   "metadata": {
     "total_papers": 12,
     "total_chunks": 348,
-    "last_updated": "2026-09-28T11:00:00Z"
-  },
-  "idf": {
-    "cognitive": 1.482,
-    "scaffolding": 2.153,
-    "ancova": 3.892,
-    "reflection": 1.905
+    "embedding_model": "BAAI/bge-base-en-v1.5",
+    "embedding_dim": 768,
+    "embedding_file": "vector_embeddings.npz",
+    "storage_format": "decoupled_json_and_npz",
+    "last_updated": "2026-10-02T14:00:00Z",
+    "file_states": {
+      "2023_Chen_Scaffolding_GenAI_in_Higher_Ed.md": {
+        "mtime": 1727850000.12,
+        "size": 45120,
+        "chunk_count": 32
+      }
+    }
   },
   "chunks": [
     {
-      "chunk_id": "2023_Chen_chunk_42",
+      "chunk_id": "2023_Chen_Scaffolding_GenAI_chunk_42",
       "file": "2023_Chen_Scaffolding_GenAI_in_Higher_Ed.md",
       "section": "3. Methodology and Experimental Design",
       "text": "The experiment was conducted across eight weeks. Participants in the experimental group (N=62) utilized the custom-built AI Agent equipped with literature scaffolding tools, whereas the control group (N=58) relied on traditional manual database searching. Cognitive load was measured using the Paas Mental Effort Rating Scale..."
@@ -200,47 +238,88 @@ flowchart TD
 }
 ```
 
-這個索引資料結構包含三大支柱：
-- **`metadata`（全域元數據）：** 記錄收錄的論文篇數與切分出的總段落數，作為系統完整性校驗的基準。
-- **`idf`（反向文件頻率表）：** 記錄每一個字詞在全庫中的稀有程度。像 `the`、`study` 這種隨處可見的詞，其 IDF 權重接近於 0；而 `ancova`、`scaffolding` 等關鍵概念詞，則被賦予極高的檢索權重。
-- **`chunks`（結構化段落清單）：** 每個段落均完整綁定所屬檔名（`file`）、章節標籤（`section`）與清洗後的正文文本（`text`），確保檢索命中時具備完整的事實上下文。
+這個 JSON 結構包含兩大核心部分：
+- **`metadata`（模型、雙檔關聯與增量快取）：** 記錄收錄論文數、總段落數、嵌入模型（`BAAI/bge-base-en-v1.5`）、特徵維度（`768`）、關聯的向量矩陣檔名（`vector_embeddings.npz`），以及每篇論文的時間戳與大小（`file_states`），作為後續增量快取比對的關鍵依據。
+- **`chunks`（結構化文本段落）：** 每個段落均綁定唯一識別碼（`chunk_id`）、所屬檔名（`file`）、章節標籤（`section`）與正文文本（`text`）。**段落清單中的第 $i$ 筆項目，嚴格對應二進位矩陣中的第 $i$ 列向量**。
+
+#### 2. 二進位向量矩陣：`01_papers/vector_embeddings.npz`
+
+- **儲存格式：** NumPy 壓縮二進位歸檔檔（`npz`）。
+- **內部陣列鍵值：** `embeddings`。
+- **矩陣維度與型態：** 形狀為 $(N, 768)$ 的 `np.float32` 二進位矩陣（$N$ 為總段落數）。
+- **歸一化保證：** 所有向量在儲存前均已完成 L2 單位長度歸一化（$\|v\|_2 = 1$）。因此檢索時，只需以查詢向量 $q$ 與矩陣直接進行矩陣內積（`np.dot(matrix, q)`），即可在 1 毫秒內一口氣求得所有段落的餘弦相似度！
 
 ---
 
-## 第三節：MCP 檢索工具鏈實戰與事實錨定提示工程
+### 2.4 索引維護策略：時間戳增量快取機制（Incremental Indexing）
 
-### 3.1 本機工具鏈操作：`build_paper_index` 與 `search_paper_chunks`
+在碩士論文寫作的長週期歷程中，研究者的文獻庫通常是動態、漸進式擴充的（例如今天新增 2 篇、下週補入 3 篇）。若每次加入新文獻都必須將整座文獻庫（數十篇、上千個區塊）全數重新送入神經網路編碼，不僅會產生不必要的計算資源浪費，更會大幅拉長研究等待時間。
 
-在我們的 `literature-workflow` MCP 伺服器中，封裝了兩大核心檢索工具：
+為此，專案檢索引擎全面支援 **「檔案時間戳比對之增量更新機制（Timestamp-based Incremental Cache）」**：
 
-1. **`build_paper_index`：**
-   - **功能：** 遍歷 `01_papers/extracted_text/` 目錄下的所有 Markdown 論文，執行結構感知分塊，計算詞頻與 IDF 權重，產出或更新 `01_papers/vector_index.json`。
-   - **調用時機：** 每當有新論文加入庫中，或重新執行了第四週的文字清洗程序後，必須執行一次以刷新索引。
-2. **`search_paper_chunks`：**
-   - **參數：** `query`（查詢語句，如 `"cognitive load Paas scale"`）、`top_k`（召回段落筆數，預設 3 筆）。
-   - **回傳內容：** 依相關度排序的精選段落，包含所屬來源論文、章節標題、相關度評分與段落原文。
+| 比對情境 | 系統判定邏輯 | 執行動作與效能表現 |
+| :--- | :--- | :--- |
+| **未修改之既有論文** | 檔名、修改時間（`st_mtime`）與檔案大小（`st_size`）完全一致 | **快取命中（Cache Hit）**：直接沿用現有向量，**耗時 0 秒**，免除重複模型推論 |
+| **新加入或已編輯論文** | 發現新檔名，或檔案時間戳/大小已變更 | **快取失效（Cache Miss）**：僅針對該篇論文重新分塊，調用 `bge-base` 計算新向量（單篇僅需 1～3 秒） |
+| **已從目錄移除之論文** | 索引中存在但 `extracted_text/` 目錄已無該檔案 | **自動修剪（Prune）**：自動將其過期段落從索引中剃除，維持索引庫絕對乾淨 |
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 研究者（你）
-    participant Agent as Antigravity AI Agent
-    participant MCP as literature-workflow MCP
-    participant Index as vector_index.json
+#### 強制全量重建開關（Force Rebuild）：
+當研究者更換了底層嵌入模型或欲重設所有維度時，只需傳入 `force=True`（終端指令加上 `--force`），腳本即會忽略快取，強制對所有文獻進行 100% 全量重新計算。
 
-    User->>Agent: 「請幫我查閱本地文獻庫中，各篇論文是如何測量學生的認知負荷？」
-    Agent->>Agent: 意圖識別：需要檢索實證測量細節，啟動檢索規劃
-    Agent->>MCP: 調用 search_paper_chunks(query="cognitive load measurement scale instrument", top_k=3)
-    MCP->>Index: 載入倒排索引，計算 TF-IDF 餘弦相關度
-    Index-->>MCP: 回傳 Top-3 相關段落（包含來源檔名與章節）
-    MCP-->>Agent: 格式化段落內容與出處
-    Agent->>Agent: 事實錨定（Fact Grounding）：基於召回段落萃取證據
-    Agent-->>User: 結構化彙整回覆，並精準註明每一項數據引自哪一篇文獻的哪一章節
-```
+---
 
-### 3.2 學術檢索語句設計（Query Formulation）
+## 第三節：離線終端建庫與自然語言檢索實戰
 
-在調用 `search_paper_chunks` 時，提問的語句結構直接決定了召回段落的品質。研究者與 Agent 在構思查詢詞時，應遵循**「概念特異性（Concept Specificity）」**原則：
+### 3.1 人機協作分工：離線終端建庫（CLI）與在線自然語言對話（Agent 互動）
+
+在嚴謹的學術研究系統設計中， **「離線索引建置（Offline Indexing）」** 與 **「在線語意檢索（Online Retrieval）」** 具有截然不同的運算特徵，因此在人機互動上進行清晰的分工解耦：
+
+1. **語意分塊與向量建庫（離線批次計算）：使用本地終端機腳本執行**
+   - **設計理念：** 文獻分塊與神經網絡向量編碼屬於「重型批次計算（Compute-Intensive Batch Job）」，需載入 `BAAI/bge-base-en-v1.5` 神經模型，批次處理數十篇文獻與上千個區塊。在終端機中獨立執行，可避免阻塞對話介面，並能透過即時 TQDM 進度條精確掌握建庫狀態。
+   - **執行方式：** 研究者在終端機中直接執行專屬 Python 腳本：
+     ```bash
+     # 預設啟用時間戳智慧增量更新（僅處理新進或異動文獻，耗時僅數秒）
+     python scripts/paper_retriever_mcp.py build
+
+     # 若更換底層模型或需全量重編，加上 --force 強制全量重建
+     python scripts/paper_retriever_mcp.py build --force
+     ```
+     **終端機即時 TQDM 進度條與建庫回報示範：**
+     ```text
+     ========================================================
+     🚀 開始建置/更新本地學術論文雙檔向量索引庫
+     📁 文獻來源：01_papers/extracted_text（共 1 篇 Markdown 論文）
+     ⚙️ 執行模式：【智慧增量更新】(比對快取)
+     ========================================================
+     📄 論文結構感知分塊與快取比對: 100%|██████████| 1/1 [00:00<00:00, 168.47篇/s]
+
+     🧠 載入嵌入模型 [BAAI/bge-base-en-v1.5] 進行稠密向量特徵編碼...
+     📊 待編碼文獻：1 篇 | 待編碼區塊：13 個 (快取沿用：0 個)
+     ⚡ BGE-Base 稠密向量編碼: 100%|██████████| 1/1 [00:07<00:00,  7.33s/批]
+
+     💾 成功儲存【雙檔解耦向量資料庫】：
+        • 文字元數據：01_papers/vector_index.json (72.8 KB)
+        • 密集向量檔：01_papers/vector_embeddings.npz (36.5 KB, shape: (13, 768))
+     🎉 索引完成！總文獻：1 篇 | 總區塊：13 個 | 向量維度：768 維
+     ```
+   - **建庫成果：** 同步於 `01_papers/` 產生純文字結構元數據檔 `vector_index.json` 與二進位壓縮向量矩陣 `vector_embeddings.npz`。
+
+2. **在線文獻檢索與深度研讀（自然語言對話）：由 Agent 在背景自動完成**
+   - **互動方式：** 研究者只需在 Antigravity 2.0 的對話框中，直接以自然學術語言向 Agent 提問（例如：「請檢索文獻庫中關於認知負荷的量表測量構面與統計顯著結果」）。Agent 會在背後自動比對雙檔向量索引庫，並以標註精確章節與出處的事實錨定格式向您回報。
+
+### 3.2 學術提問與檢索語句設計（Query Formulation）
+
+在向 Agent 提問或引導其深挖文獻時，問題中的概念清晰度直接決定了背後向量檢索所召回段落的品質。
+
+#### 1. 跨語言雙語鷹架機制（Bilingual Query Scaffolding）
+研究者與研究生**可以全程使用繁體中文進行發問與學術討論**。
+由於本地文獻庫多為國際英文期刊，且底層向量模型為針對英文高度特化的 `BAAI/bge-base-en-v1.5`，系統已在 `PROJECT.md` 中確立了雙語中介協定：
+1. **中文意圖提煉轉譯：** 當研究者以中文發問時，Agent 會在背景自動將提問意圖轉化為精確的**「英文學術關鍵詞組」**（如將「請檢索認知負荷量表與統計結果」轉譯為 `cognitive load mental effort scale ANCOVA`）調用檢索。
+2. **英文原文事實錨定：** 召回英文段落後，Agent 以嚴謹的**學術繁體中文**進行整合論述，並精準保留英文出處與章節標籤。
+3. **提問優化訣竅：** 研究者在以中文提問時，若能主動括號標註核心術語的英文名稱（例如：「請檢索關於『鷹架支援（Scaffolding）』與『自我調節學習（Self-Regulated Learning）』的具體成效」），能幫助 Agent 提煉出更高契合度的檢索關鍵字！
+
+#### 2. 「概念特異性（Concept Specificity）」原則
+構思提問詞時，應盡量聚焦於具體的實證變項、測量工具或研究方法，避免籠統空泛：
 
 | 不良查詢語句（模糊、泛泛而談） | 優質學術查詢語句（精準錨定方法或變項） | 預期檢索目標 |
 | :--- | :--- | :--- |
@@ -293,14 +372,16 @@ sequenceDiagram
 ### 4.1 課堂實作小活動：建構本地向量索引並驗證事實錨定
 
 > **活動時間：** 15 分鐘
-> **活動目標：** 為工作區建立首份 `vector_index.json`，並親自測試稀疏檢索與事實錨定的精準度。
+> **活動目標：** 為工作區建立首份雙檔解耦索引（`vector_index.json` 與 `vector_embeddings.npz`），並親自測試 BAAI/bge-base-en-v1.5 稠密向量檢索與事實錨定的精準度。
 >
 > 1. **檢查文字庫：** 確認 `01_papers/extracted_text/` 目錄下至少有 2 至 3 篇已轉譯完成的 Markdown 論文。
-> 2. **建置索引：** 在 Antigravity 2.0 對話框中向 Agent 發送指令：
->    *「請調用 MCP 工具 `build_paper_index`，為工作區的所有 Markdown 論文建立本地檢索索引。」*
->    觀察終端回傳之總段落數（Total Chunks）與檔案儲存路徑。
-> 3. **定向事實檢索：** 向 Agent 發送指令：
->    *「請使用 `search_paper_chunks` 工具，檢索文獻庫中關於『樣本數（Sample Size）』或『研究限制（Limitations）』的具體段落，並以嚴格的事實錨定格式，向我報告各篇論文的實證細節。」*
+> 2. **離線建置索引：** 在終端機中執行分塊與向量建置腳本：
+>    ```bash
+>    python scripts/paper_retriever_mcp.py build
+>    ```
+>    觀察終端輸出之論文篇數、總段落數（Total Chunks）與快取狀態，確認 `vector_index.json` 與 `vector_embeddings.npz` 雙檔成功建立。
+> 3. **定向事實檢索（自然語言對話）：** 在 Antigravity 2.0 對話框中直接向 Agent 發問：
+>    *「請幫我檢索文獻庫中關於『樣本數（Sample Size）』或『研究限制（Limitations）』的具體段落，並以嚴格的事實錨定格式，向我報告各篇論文的實證細節。」*
 > 4. **核對原文真確性：** 點開對話回傳的 Markdown 檔案連結，核對 Agent 所引述的數字或結論是否與原文一字不差！
 
 ```text
@@ -315,7 +396,7 @@ sequenceDiagram
 
 ## 本週小結與下週預告
 
-在本週的第五講中，我們成功攻克了學術文獻探討中最關鍵的技術堡壘——**本機 RAG 向量檢索系統**。我們徹底揚棄了盲目且危險的「全量灌入」模式，理解了長程注意力衰減（Lost in the Middle）的科學成因；我們實踐了保護學術邏輯脈絡的「結構感知分塊」，剖析了輕量本地倒排索引 `vector_index.json` 的設計原理，並透過 `build_paper_index` 與 `search_paper_chunks` 實現了零幻覺的事實錨定（Fact Grounding）。
+在本週的第五講中，我們成功攻克了學術文獻探討中最關鍵的技術堡壘——**本機 RAG 向量檢索系統**。我們徹底揚棄了盲目且危險的「全量灌入」模式，理解了長程注意力衰減（Lost in the Middle）的科學成因；我們實踐了保護學術邏輯脈絡的「結構感知分塊」，剖析了基於 `BAAI/bge-base-en-v1.5` 的本地「文字 / 向量雙檔解耦索引（`vector_index.json` + `vector_embeddings.npz`）」與增量快取機制，並透過離線終端腳本批次建庫與在線 Agent 自然語言檢索實現了零幻覺的事實錨定（Fact Grounding）。
 
 然而，檢索出零碎的精華段落，只是研究拼圖的第一步。一篇優秀的碩士論文或期刊論文，要求研究者必須對關鍵經典文獻進行**「解剖級的深度精讀」**。
 

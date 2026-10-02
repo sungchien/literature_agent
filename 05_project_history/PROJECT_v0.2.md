@@ -1,4 +1,4 @@
-# 論文研究規格書：PROJECT.md (v0.3 本機 RAG 向量檢索與雙語鷹架治理版)
+# 論文研究規格書：PROJECT.md (v0.2 智慧文獻管線與工具治理版)
 
 ## 1. 暫定研究主題與雙重目標
 - **工作題目：** 導入 AI Agent 於碩士論文文獻探討之教學實踐研究：研究生認知轉變與研究歷程之行動探索
@@ -16,7 +16,7 @@
   - 研究者每週教學省思日誌與課堂觀察。
   - 學生存於 `04_research_data/diaries/` 的每週研究日記（記錄提示詞策略、工具操作、遭遇障礙與感受反思）。
   - 學生最終文獻探討成果之文本分析。
-- **規格版本控制：** 歷史規格版本（v0.1, v0.2）統一歸檔於 `05_project_history/`，維持根目錄純淨。
+- **規格版本控制：** 歷史規格版本統一歸檔於 `05_project_history/`，維持根目錄純淨。
 
 ## 3. 現階段探索性研究問題（Exploratory RQs）
 - **RQ1（教學設計與鷹架）：** 在碩士班文獻探討教學中，如何建構以 AI Agent 為核心的漸進式引導架構，以支援不同研究主題學生的文獻梳理？
@@ -46,25 +46,19 @@
   1. **共同思考而非武斷說教：** 當我提出模糊想法時，以提問引導我釐清，並提供國際期刊常見之研究設計架構作為參考。
   2. **緊扣時間節點：** 所有教學活動與任務設計，必須符合「11 月計畫書口試」的緊迫時限，強調實用性與可操作性。
   3. **拒絕虛構文獻：** 在推薦相關理論、研究量表或文獻時，必須提供真實發表的篇名、作者與發表年份，嚴禁學術幻覺。
-  4. **嚴格禁止自行編寫臨時腳本或調用外部 Skill 替代本機管線（工具調用強制規範）：**
-     - **離線批次重型計算（本地終端機腳本執行，非 MCP 工具）：**
-       - PDF 雙欄版面轉譯清洗：`python scripts/extract_pdf_to_md.py`
-       - 雙檔解耦向量索引建置：`python scripts/paper_retriever_mcp.py build [--force]`（採用 `BAAI/bge-base-en-v1.5` 768 維模型，具備增量快取與 TQDM 進度可視化）
-     - **在線動態人機協同（專案正式登錄之 `literature-workflow` MCP 工具鏈）：**
+  4. **嚴格禁止自行編寫臨時腳本或調用外部 Skill 替代本機管線（MCP 工具調用強制規範）：**
+     - 當執行文獻檢索、候選清單生成、論文審查、全文下載、文字轉譯與向量段落搜尋時，**一律嚴禁**自行編寫臨時 Python 腳本或使用 `curl`/`urllib` 發送未管線化的請求，**亦嚴禁**調用外部 plugin 之 Skill（如 `literature-search-openalex`）替代專案工作流。
+     - **必須且只能**調用專案正式登錄之 `literature-workflow` MCP 工具鏈：
        - 檢索文獻清單：`search_candidate_papers`
        - 提取論文摘要：`get_candidate_papers`
        - 記錄審查決策：`review_candidate_papers`
        - 下載採納全文：`download_selected_papers`
        - 外部論文收件掃描：`scan_inbox_papers`
        - 外部文獻元數據治理入庫：`ingest_external_papers`
-       - 語意事實精華檢索：`search_paper_chunks`
-     - **PRISMA 規範化追蹤：** 任何文獻探討操作均必須嚴格維護兩位數流水號機制（`candidate_papers_XX.md`）與專屬獲取追蹤檔案（`candidate_papers_XX_tracking.md` / `.json`），符合系統性文獻回顧（PRISMA）標準。
+       - 雙欄轉譯清洗：`convert_pdfs_to_markdown`
+       - 建立向量索引：`build_paper_index`
+       - 語意事實檢索：`search_paper_chunks`
+     - 任何文獻探討操作均必須嚴格維護兩位數流水號機制（`candidate_papers_XX.md`）與專屬獲取追蹤檔案（`candidate_papers_XX_tracking.md` / `.json`），符合系統性文獻回顧（PRISMA）標準。
   5. **落實人機協同品質把關（Human-in-the-Loop 暫停點設計）：**
      - 當調用 `search_candidate_papers` 完成候選論文檢索後，**必須主動在對話中暫停**，條列呈現論文之期刊出處、年份與核心摘要，並提供初步的採納 `[+]` 或排除 `[-]` 建議。
      - **絕不可擅自越俎代庖逕行下載全文**，必須等待研究者在對話中以自然語言核定決策後，調用 `review_candidate_papers` 寫入決策，方可接續執行下載。
-  6. **跨語言學術檢索與雙語中介協定（Cross-Lingual Retrieval & Bilingual Scaffolding）：**
-     - **輸入轉譯（Chinese-to-English Query Formulation）：** 研究者得以繁體中文進行所有學術對話、研究討論與提問。當調用 `search_paper_chunks` 進行本地論文向量檢索時，因底層索引模型（`BAAI/bge-base-en-v1.5`）與論文全文皆為英文，**Agent 必須自動將研究者的中文提問意圖提煉轉譯為精確的「英文學術關鍵詞組」（Academic English Keywords / Query）**（例如：將「請檢索各篇論文對認知負荷的量表測量構面與研究限制」轉化為 `query="cognitive load measurement scale instrument dimensions limitations"`），嚴禁直接以原始中文語句傳入檢索工具。
-     - **輸出統整（English-to-Chinese Fact Synthesis）：** 當檢索工具回傳英文原文精華段落後，Agent 必須以嚴謹的學術繁體中文為研究者進行綜合論述與事實錨定，並完整保留英文文獻出處、作者與章節標籤（如 `[2024_Wang.md, 2.3 Instruments]`），實現兼具無障礙中文研讀與嚴謹英文實證的雙語鷹架支援。
-  7. **嚴格事實錨定紀律（Strict Fact Grounding & Anti-Hallucination Discipline）：**
-     - 回答研究問題時，必須百分之百錨定於工作區檢索出的實證段落。嚴禁推論未被提及的樣本數據或統計結果。
-     - 若檢索段落中未包含回答所需資訊，必須客觀坦誠指出：「本機現有檢索段落中未包含此項資訊，建議擴大文獻庫或調整檢索關鍵詞」，切勿利用預訓練常識進行腦補。

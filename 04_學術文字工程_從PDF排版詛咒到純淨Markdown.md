@@ -75,8 +75,7 @@ puppeteer:
    pip install PyMuPDF pymupdf4llm
    ```
 2. **確認核心文字工程腳本**：
-   - `scripts/extract_pdf_to_md.py`（專屬雙欄排版重構、References 截斷與文字清洗工具）
-   - `scripts/literature_workflow_mcp.py`（已登錄 `convert_pdfs_to_markdown` 工具之全流程 MCP 伺服器）
+   - `scripts/extract_pdf_to_md.py`（專屬雙欄排版重構、References 截斷與文字清洗之獨立終端批次工具）
 3. **確認在庫文獻**：
    確認 `01_papers/raw_pdf/` 目錄中已有第二週或第三週所累積的 PDF 文獻。
 
@@ -480,128 +479,15 @@ REF_HEADING_REGEX = re.compile(
 在專案中，所有的文字工程演算法已經被高度模組化封裝於：
 - **核心工具路徑**：`scripts/extract_pdf_to_md.py`
 
-```mermaid
-flowchart TD
-    Start["啟動 extract_pdf_to_md.py"] --> Mode{"指令判斷"}
-    Mode -->|指定批次如 01| B1["讀取 candidate_papers_01.md 與 tracking<br/>鎖定該批次標記為 [+] 採納文獻"]
-    Mode -->|--all| B2["全量掃描 raw_pdf/ 下所有 PDF"]
-    Mode -->|無參數| B3["自動偵測最新一批 candidate_papers"]
+#### 指令參數與使用方式說明表
 
-    B1 & B2 & B3 --> Loop["逐篇讀取 raw_pdf/*.pdf"]
-    Loop --> Engine{"檢查環境是否支援 pymupdf4llm？"}
-    Engine -->|支援| P1["調用 pymupdf4llm：<br/>版面幾何辨識、雙欄閱讀流重構、GFM 表格生成"]
-    Engine -->|未安裝| P2["平滑降級調用 fitz (PyMuPDF)：<br/>讀取 blocks 文字並重構自然段落"]
+| 模式 / 參數 | 指令範例 | 運作機制與說明 | 適用時機與情境 |
+| :--- | :--- | :--- | :--- |
+| **預設模式（無參數）** | `python scripts/extract_pdf_to_md.py` | 自動偵測最新一批 `candidate_papers_XX.md`，僅轉譯該批次中標記 `[+]` 採納的文獻（終端互動環境支援清單選單挑選） | 最常見日常情境；剛完成最新一批檢索與審查時 |
+| **指定批次流水號** | `python scripts/extract_pdf_to_md.py 01`<br>`python scripts/extract_pdf_to_md.py -b 01` | 精確鎖定指定批次（如 `candidate_papers_01.md`）並讀取 tracking 檔，只轉譯該批次勾選為 `[+]` 的文獻 | 回溯補轉特定歷史檢索批次，避免重跑其他文獻 |
+| **全量轉譯模式** | `python scripts/extract_pdf_to_md.py --all`<br>`python scripts/extract_pdf_to_md.py -a` | 忽略評估清單限制，直接全量掃描 `01_papers/raw_pdf/` 目錄下的所有 PDF 原件進行批次轉譯 | 初次建立文獻庫、或欲全面更新抽取格式時 |
+| **進度狀態總覽** | `python scripts/extract_pdf_to_md.py --list`<br>`python scripts/extract_pdf_to_md.py -l` | 列出工作區所有批次的檢索主題、採納篇數、在庫 PDF 數及已轉譯 Markdown 篇數統計 | 快速盤點文獻庫在庫狀態與轉譯完整度 |
 
-    P1 & P2 --> Clean["文本清洗工程：<br/>1. 消除行尾連字符 (De-hyphenation)<br/>2. 過濾頁首頁尾版權與頁碼<br/>3. 精準識別並切除文末 References 清單"]
-    Clean --> Out["儲存純淨 Markdown 至 01_papers/extracted_text/{同名}.md"]
-    Out --> Report["打印轉譯統計報表：<br/>原始字元數 vs 清洗後字元數 (降噪率 %)"]
-
-```
-
-#### 腳本的兩大關鍵設計亮點：
-1. **批次流水號連動感知（Batch-aware Resolution）**：
-   當你在終端機執行 `python scripts/extract_pdf_to_md.py 01` 時，腳本不會盲目把整個資料夾幾十篇論文重新轉譯一遍。它會主動讀取 `candidate_papers_01.md`，比對勾選狀態為 `[+]` 的文獻，只針對該批次在 `raw_pdf/` 的檔案執行處理，大幅節省時間與運算資源。
-2. **降噪效益即時量化**：
-   轉譯完成後，腳本會精確回報每篇論文在切除 References 與雜音後**節省的字元數與百分比**（通常介於 25% 至 40% 之間），讓研究者清楚看見文字工程的實質效益！
-
----
-
-## 第四節：批次文字工程管線操作與 MCP 工具化實踐
-
-### 4.1 終端機手動批次轉譯指令操作
-
-請在工作區終端機中，體驗以下標準操作指令：
-
-```bash
-# 指令 1：轉譯最新批次的採納文獻（最常用）
-python scripts/extract_pdf_to_md.py
-
-# 指令 2：指定轉譯特定檢索批次（例如第 01 批 candidate_papers_01.md）
-python scripts/extract_pdf_to_md.py 01
-
-# 指令 3：全量重新轉譯（強制處理 raw_pdf/ 目錄下的所有 PDF）
-python scripts/extract_pdf_to_md.py --all
-
-# 指令 4：檢視文獻庫轉譯狀態總覽（在庫 PDF、已轉譯 md、待轉譯篇數）
-python scripts/extract_pdf_to_md.py --list
-```
-
-#### 執行範例與終端機輸出回饋：
-
-```text
-================================================================================
-🛠️ 學術文字工程轉譯管線：處理批次 [01] (candidate_papers_01.md)
-================================================================================
-[1/3] 正在處理：《Scaffolding Graduate Students Thesis Writing with AI Agents》
-      PDF 檔案：2023_Chen_Scaffolding_Graduate_Students_Thesis.pdf
-      轉譯核心：pymupdf4llm 雙欄閱讀流辨識
-      降噪處理：成功截斷文末 ## References 章節（切除 5,240 字元無效引用）
-      輸出路徑：01_papers/extracted_text/2023_Chen_Scaffolding_Graduate_Students_Thesis.md
-      效益分析：原始 34,210 字元 -> 純淨 25,120 字元 (降噪節省：26.6%)
-
-[2/3] 正在處理：《Cognitive Load in AI-assisted Academic Writing: A Quasi-experiment》
-      PDF 檔案：2024_Lin_Cognitive_Load_in_AI-assisted_Acade.pdf
-      轉譯核心：pymupdf4llm 雙欄閱讀流辨識
-      降噪處理：成功截斷文末 ## References 章節（切除 6,810 字元無效引用）
-      輸出路徑：01_papers/extracted_text/2024_Lin_Cognitive_Load_in_AI-assisted_Acade.md
-      效益分析：原始 41,500 字元 -> 純淨 29,800 字元 (降噪節省：28.2%)
-================================================================================
-✨ 批次 [01] 文字工程轉譯完成！共成功產出 2 篇純淨 Markdown 文本至 extracted_text/
-```
-
----
-
-### 4.2 整合至 MCP 工具鏈：自然語言驅動文字清洗
-
-除了在終端機中手動執行外，本文字工程管線已經無縫整合至專案的 MCP 伺服器（`scripts/literature_workflow_mcp.py`）中，向 Agent 宣告了專屬工具：
-- **`convert_pdfs_to_markdown`**
-
-#### 自然語言驅動提示詞範例：
-在 Antigravity 2.0 對話視窗中，研究者可以隨時以下達自然語言研究指令：
-
-> **自然語言驅動範例：**
-> - *「我剛才下載的候選論文已經放入 raw_pdf 了，請幫我執行學術文字工程轉譯，產出純淨 Markdown 到 extracted_text 目錄。」*
-> - *「請針對 candidate_papers_01 中的採納論文執行雙欄排版重構，記得切除 References 噪音與出版商頁首頁尾。」*
-> - *「幫我檢查 extracted_text 裡面有哪些已經轉譯好的論文，回報各篇的字數與章節大綱。」*
-
-**Agent 的後端自主行為：**
-Agent 會自動解析指令意圖，調用 `convert_pdfs_to_markdown` 工具，在背景啟動 PyMuPDF 演算法，完成雙欄還原與 References 切除，並在對話視窗向研究者回報清洗摘要與字數節省成效！
-
----
-
-### 4.3 課堂實作活動：清洗前與清洗後文本結構深度校驗
-
-> **活動時間：** 15 分鐘
-> **活動任務：** 親自執行文字工程，並在編輯器中橫向對比原始 PDF 與轉譯後的純淨 Markdown。
->
-> 1. **步驟一：執行文字工程轉譯**
->    打開終端機，執行轉譯指令：
->    ```bash
->    python scripts/extract_pdf_to_md.py --all
->    ```
->    確認終端機回報各篇文獻成功轉譯並輸出至 `01_papers/extracted_text/`。
-> 2. **步驟二：開啟轉譯後的 Markdown 檔案**
->    在 VS Code 或 Antigravity 左側檔案總管中，展開 `01_papers/extracted_text/` 目錄，隨機點開其中一篇 `.md` 檔案。
-> 3. **步驟三：開啟 Markdown 預覽模式（Markdown Preview）**
->    按下 `Ctrl + Shift + V`（macOS: `Cmd + Shift + V`）開啟預覽，檢查以下關鍵品質指標：
->    - **大綱層級（Headings）**：觀察文章各節大標題（如 `# 1. Introduction`、`## 3. Methodology`）是否清晰呈現？
->    - **雙欄閱讀流**：觀察左欄最後一句與右欄第一句是否自然銜接，毫無左右錯亂？
->    - **References 截斷驗證**：拉到文章最底部，確認文章是否在最後一個討論或結論段落俐落結束，完全消除了後面幾十頁密密麻麻的引用名單？
-> 4. **步驟四：向 Agent 提問驗證語意掌握度**
->    在對話框向 Agent 提問：
->    *「請閱讀 extracted_text 目錄下的最新論文，告訴我這篇研究的研究設計（Research Design）、受試者人數與核心實證發現。」*
->    觀察 Agent 如何在數秒內給出精準無誤、毫無幻覺的回答！
-
-```text
-老師的真心話：
-學術研究的進展，本質上就是一場『降低熵增、對抗資訊混亂』的修煉。
-當別人還在傻傻地把整份混亂的 PDF 塞進大模型、被雙欄錯亂搞得暈頭轉向、被文末 References 騙得產出假引用時，
-你已經掌握了現代 AI 學術文字工程的核心技術——
-用 PyMuPDF 重構語意流、用正則精準切除噪音、用純淨 Markdown 守護模型注意力！
-看著 extracted_text/ 裡面一篇篇清爽、高密度、大綱分明的 Markdown 論文，
-這就是你在整個碩士研究歷程中，最值得自豪的乾淨文字基石！
-
-```
 
 ---
 
@@ -611,7 +497,7 @@ Agent 會自動解析指令意圖，調用 `convert_pdfs_to_markdown` 工具，�
 1. **破解 PDF 排版詛咒：** 深刻理解了幾何繪圖指令、雙欄穿插、連字符號斷詞與頁首頁尾對 LLM 注意力機制的毀滅性干擾。
 2. **References 雜音截斷技術：** 設計了具備位置門檻防護的正則表達式，精準切除佔據 30% 篇幅的參考文獻清單，徹底破解「中間遺忘（Lost in the Middle）」與引文幻覺致命傷。
 3. **高效能 C 核心工具鏈：** 運用 `PyMuPDF` 與 `pymupdf4llm`，在毫秒級別完成雙欄排版重構、階層標題恢復與 GFM 結構化表格保真。
-4. **工具化與純淨文本庫就位：** 將文字工程封裝為 MCP 工具，產出純淨、高密度、體積縮減 90% 的學術語料於 `01_papers/extracted_text/`。
+4. **工具化與純淨文本庫就位：** 將文字工程封裝為專屬高效能終端批次工具，產出純淨、高密度、體積縮減 90% 的學術語料於 `01_papers/extracted_text/`。
 
 ---
 
@@ -627,6 +513,6 @@ Agent 會自動解析指令意圖，調用 `convert_pdfs_to_markdown` 工具，�
 - **為什麼學術精讀非 RAG 不可**：破解當論文庫多達數十篇、文字量高達數十萬字時，如何超越傳統關鍵字比對的語意鴻溝（Semantic Gap）。
 - **標題感知切塊工程（Heading-aware Chunking）**：剖析固定長度切塊（Fixed-size Chunking）與學術標題結構化切塊的巨大質量差異。
 - **文字向量化與語意空間（Embeddings & Vector Space）**：理解文本轉向量、高維空間語意距離與餘弦相似度演算法。
-- **深入實戰 `scripts/paper_retriever_mcp.py`**：逐行拆解專案檢索引擎原始碼，掌握 `build_paper_index` 本機向量建檔與 `search_paper_chunks` 毫秒級語意段落秒回！
+- **深入實戰 `scripts/paper_retriever_mcp.py`**：逐行拆解專案檢索引擎原始碼，掌握離線雙檔向量索引建庫與在線 `search_paper_chunks` 毫秒級語意段落秒回！
 
 為下一階段的「單篇文獻批判精讀卡片化」與「跨篇研究矩陣共構」，裝上真正的語意導航雷達！

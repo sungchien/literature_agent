@@ -2,14 +2,18 @@
 scripts/literature_workflow_mcp.py
 
 學術文獻全流程 MCP 伺服器（Literature Workflow MCP Server）
-整合核心工具鏈：
+整合 Agent 在線協同工具鏈：
 1. search_candidate_papers: 檢索 OpenAlex 並生成流水號候選文獻評估清單
 2. get_candidate_papers: 讀取候選論文清單與詳細摘要欄位
 3. review_candidate_papers: 依研究者決策批次更新審查標記（Human-in-the-Loop [+] 採納 / [-] 排除 / [ ] 待定）
 4. download_selected_papers: 依採納狀態自動下載 OA PDF，提示人工調閱封閉期刊
-5. convert_pdfs_to_markdown: 批次將 raw_pdf 轉譯為純淨 Markdown，剔除 References 噪音
-6. build_paper_index: 為 extracted_text 建立標題感知之向量檢索索引
-7. search_paper_chunks: 依據自然語言查詢檢索最相關之論文精華段落
+5. search_paper_chunks: 依據自然語言查詢在線檢索最相關之論文精華段落（事實錨定）
+6. scan_inbox_papers: 掃描 inbox 目錄之外部 PDF 文獻
+7. ingest_external_papers: 外部文獻元數據逆向解析、命名規範化入庫
+
+註：重型批次管線（PDF 轉 Markdown、向量分塊建庫）由獨立終端腳本離線執行：
+- 轉譯清洗：python scripts/extract_pdf_to_md.py
+- 向量建庫：python scripts/paper_retriever_mcp.py build
 
 支援雙模運作：
 - 命令列 CLI 模式：提供個別功能手動執行、審查與除錯
@@ -200,28 +204,6 @@ def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                         }
                     },
                     {
-                        "name": "convert_pdfs_to_markdown",
-                        "description": "將 01_papers/raw_pdf/ 目錄下的 PDF 轉譯為純淨 Markdown 文本，自動剔除 References 引用清單與出版噪音，存放至 01_papers/extracted_text/。支援指定候選清單批次流水號進行針對性轉譯，避免全量重複轉換。",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {
-                                "batch": {
-                                    "type": "string",
-                                    "description": "指定轉譯之候選清單流水號（例如 '01', '02'），若不指定則預設轉譯最新批次，傳入 'all' 則全量轉譯",
-                                    "default": ""
-                                }
-                            }
-                        }
-                    },
-                    {
-                        "name": "build_paper_index",
-                        "description": "掃描 01_papers/extracted_text/ 下的所有 Markdown 論文，以標題與段落為界建立語意倒排索引並儲存為 01_papers/vector_index.json。",
-                        "inputSchema": {
-                            "type": "object",
-                            "properties": {}
-                        }
-                    },
-                    {
                         "name": "search_paper_chunks",
                         "description": "於本地論文索引庫中進行語意檢索，依據查詢問題回傳最相關之論文精華段落、所屬章節與文獻出處。",
                         "inputSchema": {
@@ -229,7 +211,7 @@ def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                             "properties": {
                                 "query": {
                                     "type": "string",
-                                    "description": "欲查詢的研究概念或問題（例如：'How does AI scaffolding reduce cognitive load?'）"
+                                    "description": "欲查詢的學術英文概念或問題（若使用者以中文發問，Agent 必須先自動提煉為精確的學術英文關鍵詞組，例如：'cognitive load measurement scale instrument'，以確保與底層 BGE-Base 英文向量模型及英文論文庫完美匹配）"
                                 },
                                 "top_k": {
                                     "type": "integer",
@@ -339,23 +321,6 @@ def handle_mcp_request(request: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 "jsonrpc": "2.0",
                 "id": req_id,
                 "result": {"content": [{"type": "text", "text": log if log else "下載程序已執行完成。"}]}
-            }
-
-        elif tool_name == "convert_pdfs_to_markdown":
-            batch_arg = args.get("batch", "")
-            log = capture_output(convert_batch_or_all, batch_arg)
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {"content": [{"type": "text", "text": log if log else "PDF 轉譯與文字清洗程序已執行完成。"}]}
-            }
-
-        elif tool_name == "build_paper_index":
-            res = build_index_data()
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {"content": [{"type": "text", "text": json.dumps(res, ensure_ascii=False, indent=2)}]}
             }
 
         elif tool_name == "search_paper_chunks":
