@@ -193,7 +193,7 @@ Chunk #13:
 ### 2.3 文字與向量「雙檔解耦」架構剖析：`vector_index.json` 與 `vector_embeddings.npz`
 
 本專案採用 **「文字 / 向量雙檔解耦架構（Decoupled Dual-File Architecture）」** ，將論文的語意正文元數據與密集數學向量分別存放於專門優化的檔案格式中：
--- **`01_papers/vector_index.json`（純文字結構化元數據庫）：** 儲存文獻目錄、增量快取時間戳（`file_states`）以及切分後的結構化段落正文（`chunks`）。
+- **`01_papers/vector_index.json`（純文字結構化元數據庫）：** 儲存文獻目錄、增量快取時間戳（`file_states`）以及切分後的結構化段落正文（`chunks`）。
 - **`01_papers/vector_embeddings.npz`（NumPy 二進位密集矩陣）：** 儲存所有段落對應的 768 維 `BAAI/bge-base-en-v1.5` 高維稠密嵌入向量矩陣。
 
 #### 雙檔解耦架構的核心優勢
@@ -314,7 +314,7 @@ Chunk #13:
 #### 1. 跨語言雙語鷹架機制（Bilingual Query Scaffolding）
 研究者與研究生**可以全程使用繁體中文進行發問與學術討論**。
 由於本地文獻庫多為國際英文期刊，且底層向量模型為針對英文高度特化的 `BAAI/bge-base-en-v1.5`，系統已在 `PROJECT.md` 中確立了雙語中介協定：
-1. **中文意圖提煉轉譯：** 當研究者以中文發問時，Agent 會在背景自動將提問意圖轉化為精確的**「英文學術關鍵詞組」**（如將「請檢索認知負荷量表與統計結果」轉譯為 `cognitive load mental effort scale ANCOVA`）調用檢索。
+1. **中文意圖提煉轉譯：** 當研究者以中文發問時，Agent 會在背景自動將提問意圖轉化為精確的 **「英文學術關鍵詞組」** （如將「請檢索認知負荷量表與統計結果」轉譯為 `cognitive load mental effort scale ANCOVA`）調用檢索。
 2. **英文原文事實錨定：** 召回英文段落後，Agent 以嚴謹的**學術繁體中文**進行整合論述，並精準保留英文出處與章節標籤。
 3. **提問優化訣竅：** 研究者在以中文提問時，若能主動括號標註核心術語的英文名稱（例如：「請檢索關於『鷹架支援（Scaffolding）』與『自我調節學習（Self-Regulated Learning）』的具體成效」），能幫助 Agent 提煉出更高契合度的檢索關鍵字！
 
