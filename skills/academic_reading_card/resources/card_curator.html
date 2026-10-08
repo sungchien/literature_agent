@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>七維學術閱讀卡片人機協同審核面板 (Academic Reading Card Curator)</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* 容器過渡與自訂滾動條 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
+  </style>
+</head>
+<body class="bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] antialiased min-h-screen p-4 md:p-6 pb-28">
+
+  <!-- Header Section -->
+  <header class="max-w-6xl mx-auto mb-6 bg-[var(--card,#1e293b)] border border-[var(--border,#334155)] rounded-2xl p-5 shadow-lg">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            Antigravity 2.0 Generative UI
+          </span>
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            七維標準 Schema
+          </span>
+        </div>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight text-[var(--foreground,#f8fafc)]">
+          學術閱讀卡片人機協同審核面板 (Card Curator)
+        </h1>
+        <p class="text-xs md:text-sm text-[var(--muted-foreground,#94a3b8)] mt-1">
+          落實「七維卡片認知責任光譜」：綠燈自動萃取、黃燈對抗審查、藍燈親自主筆，破除 AI 認知外包與數據幻覺。
+        </p>
+      </div>
+
+      <!-- Quick Preset Selector -->
+      <div class="flex flex-wrap items-center gap-2">
+        <label for="presetSelector" class="text-xs text-[var(--muted-foreground,#94a3b8)] font-medium">快速載入範例：</label>
+        <select id="presetSelector" onchange="loadPreset(this.value)" class="text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+          <option value="kasneci">Kasneci et al. (2023) - 課堂解剖案例 (立場論文)</option>
+          <option value="chen">Chen & Roberts (2023) - 金牌範例 (實證準實驗)</option>
+          <option value="custom">空白新卡片範本 (自填)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Tier Responsibility Legend & Progress Bar -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mt-5 pt-4 border-t border-[var(--border,#334155)]">
+      <!-- Tier 1 Indicator -->
+      <div class="flex items-center justify-between p-2.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <div>
+            <div class="text-xs font-semibold text-emerald-300">Tier 1: 完全自動化</div>
+            <div class="text-[12px] text-emerald-400/80">維度一（元數據）、維度七（引句）</div>
+          </div>
+        </div>
+        <span id="tier1Status" class="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">已提取</span>
+      </div>
+
+      <!-- Tier 2 Indicator -->
+      <div class="flex items-center justify-between p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/20">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          <div>
+            <div class="text-xs font-semibold text-amber-300">Tier 2: 人機共構審核</div>
+            <div class="text-[12px] text-amber-400/80">維度二、三、四（數據）、五（批判）</div>
+          </div>
+        </div>
+        <span id="tier2Status" class="text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">核對中 (0/4)</span>
+      </div>
+
+      <!-- Tier 3 Indicator -->
+      <div class="flex items-center justify-between p-2.5 rounded-xl bg-indigo-500/5 border border-indigo-500/20">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          <div>
+            <div class="text-xs font-semibold text-indigo-300">Tier 3: 研究者親自主筆</div>
+            <div class="text-[12px] text-indigo-400/80">維度六（對本研究 PROJECT.md 啟發）</div>
+          </div>
+        </div>
+        <span id="tier3Status" class="text-xs font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">待撰寫</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Form -->
+  <main class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Dimension 1: Tier 1 (Green) -->
+    <section class="bg-[var(--card,#1e293b)] border border-emerald-500/30 rounded-2xl p-5 shadow-sm transition hover:border-emerald-500/50">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Tier 1 自動萃取</span>
+          <h2 class="text-base font-bold text-[var(--foreground,#f8fafc)]">維度一：文獻元數據與引用標識 (Metadata & Citation Key)</h2>
+        </div>
+        <span class="text-xs text-emerald-400 font-medium">✓ AI 全自動解析完成</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">BibTeX Key</label>
+          <input type="text" id="bibtexKey" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 font-mono focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">第一作者 (First Author)</label>
+          <input type="text" id="firstAuthor" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">發表年份 (Year)</label>
+          <input type="number" id="year" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">完整篇名 (Title)</label>
+          <input type="text" id="paperTitle" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">期刊 / 研討會 (Journal)</label>
+          <input type="text" id="journal" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">DOI (數位物件識別碼)</label>
+          <input type="text" id="doi" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 font-mono focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">原始 Markdown 路徑 (source_md)</label>
+          <input type="text" id="sourceMd" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 font-mono focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+      </div>
+    </section>
+
+    <!-- Dimension 2: Tier 2 (Yellow) -->
+    <section class="bg-[var(--card,#1e293b)] border border-amber-500/30 rounded-2xl p-5 shadow-sm transition hover:border-amber-500/50">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Tier 2 人機審核</span>
+          <h2 class="text-base font-bold text-[var(--foreground,#f8fafc)]">維度二：核心研究問題與理論框架 (RQs & Theoretical Lens)</h2>
+        </div>
+        <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium text-amber-300">
+          <input type="checkbox" id="checkDim2" onchange="updateTierProgress()" class="rounded border-amber-400 text-amber-500 focus:ring-0">
+          <span>確認已覆核</span>
+        </label>
+      </div>
+      <p class="text-xs text-[var(--muted-foreground,#94a3b8)] mb-3">
+        請檢查 AI 提煉之問題是否切中作者主要研究假設，理論框架是否具備學理依據而非空泛名詞。
+      </p>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">核心研究問題 (Research Questions)</label>
+          <textarea id="dim2RQs" rows="3" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg p-3 focus:ring-1 focus:ring-amber-500 focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">支撐理論框架 (Theoretical Foundations)</label>
+          <textarea id="dim2Theories" rows="2" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg p-3 focus:ring-1 focus:ring-amber-500 focus:outline-none"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dimension 3: Tier 2 (Yellow) -->
+    <section class="bg-[var(--card,#1e293b)] border border-amber-500/30 rounded-2xl p-5 shadow-sm transition hover:border-amber-500/50">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Tier 2 人機審核</span>
+          <h2 class="text-base font-bold text-[var(--foreground,#f8fafc)]">維度三：研究設計與實證方法論 (Methodology & Sample)</h2>
+        </div>
+        <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium text-amber-300">
+          <input type="checkbox" id="checkDim3" onchange="updateTierProgress()" class="rounded border-amber-400 text-amber-500 focus:ring-0">
+          <span>確認已覆核方法細節</span>
+        </label>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">研究方法與設計 (Design: 準實驗/質性/調查)</label>
+          <input type="text" id="dim3Design" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">研究對象與樣本數 (Sample N & Attributes)</label>
+          <input type="text" id="dim3Sample" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">研究情境與介入長度 (Context & Duration)</label>
+          <input type="text" id="dim3Context" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">測量工具與量表信效度 (Instruments & Reliability)</label>
+          <input type="text" id="dim3Instruments" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 focus:ring-1 focus:ring-amber-500 focus:outline-none">
+        </div>
+      </div>
+    </section>
+
+    <!-- Dimension 4: Tier 2 (Yellow - Anti Hallucination Guard) -->
+    <section class="bg-[var(--card,#1e293b)] border border-amber-500/40 rounded-2xl p-5 shadow-sm transition hover:border-amber-500/60 relative">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Tier 2 數據審核</span>
+          <h2 class="text-base font-bold text-[var(--foreground,#f8fafc)]">維度四：關鍵實證數據與核心發現 (Empirical Findings)</h2>
+        </div>
+        <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-amber-300 bg-amber-500/10 px-2 py-1 rounded-lg border border-amber-500/30">
+          <input type="checkbox" id="checkDim4" onchange="updateTierProgress()" class="rounded border-amber-400 text-amber-500 focus:ring-0">
+          <span>已核對原文真實數值</span>
+        </label>
+      </div>
+
+      <!-- Anti-hallucination banner -->
+      <div class="mb-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 flex items-start gap-2">
+        <span class="text-base leading-none">⚠️</span>
+        <div>
+          <span class="font-bold">防數據幻覺警示：</span>
+          嚴禁填入空泛形容詞！請打開 Markdown/PDF 原文，逐一核對 <code class="font-mono bg-black/30 px-1 rounded">F, t, p, η_p², Cohen's d</code> 等統計指標。若文獻為立場論述（Position Paper）或無量化數據，請明確註明「無實證統計數據」，切勿自行腦補數值。
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">量化統計指標與效果量 (Quantitative Stats & Effect Sizes)</label>
+          <textarea id="dim4Stats" rows="3" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg p-3 font-mono focus:ring-1 focus:ring-amber-500 focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">質性核心發現 / 編碼主題 (Qualitative Findings / Themes)</label>
+          <textarea id="dim4Themes" rows="2" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg p-3 focus:ring-1 focus:ring-amber-500 focus:outline-none"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dimension 5: Tier 2 (Yellow - Adversarial Review) -->
+    <section class="bg-[var(--card,#1e293b)] border border-amber-500/30 rounded-2xl p-5 shadow-sm transition hover:border-amber-500/50">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">Tier 2 對抗批判</span>
+          <h2 class="text-base font-bold text-[var(--foreground,#f8fafc)]">維度五：批判性審視與方法學盲點 (Critical Limitations)</h2>
+        </div>
+        <label class="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium text-amber-300">
+          <input type="checkbox" id="checkDim5" onchange="updateTierProgress()" class="rounded border-amber-400 text-amber-500 focus:ring-0">
+          <span>已注入獨立批判</span>
+        </label>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">原文作者承認之限制 (Author-stated Limitations)</label>
+          <textarea id="dim5AuthorLimits" rows="2" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg p-3 focus:ring-1 focus:ring-amber-500 focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-amber-300 mb-1 flex items-center justify-between">
+            <span>審查者獨立批判（我的觀點 / 效度威脅質疑）</span>
+            <span class="text-[12px] text-[var(--muted-foreground,#94a3b8)]">請至少提出 2 點方法學破綻</span>
+          </label>
+          <textarea id="dim5MyCritique" rows="3" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg p-3 focus:ring-1 focus:ring-amber-500 focus:outline-none" placeholder="例如：1. 未設延宕後測（內部效度威脅）；2. 樣本集中於單一學院（生態效度限制）..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dimension 6: Tier 3 (Blue - Thesis Core / Human-Led) -->
+    <section class="bg-[var(--card,#1e293b)] border-2 border-indigo-500/50 rounded-2xl p-5 shadow-lg transition hover:border-indigo-500/80">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-0.5 rounded text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Tier 3 研究者親筆主導</span>
+          <h2 class="text-base font-bold text-indigo-300">維度六：對本研究 PROJECT.md 的直接啟發 (Actionable Insights)</h2>
+        </div>
+        <span class="text-xs px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-300 font-semibold border border-indigo-500/20">學位論文靈魂核心</span>
+      </div>
+
+      <!-- Human Core Banner -->
+      <div class="mb-4 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-xs text-indigo-200">
+        <div class="font-semibold mb-1">🎯 守護學術原創性：嚴禁 AI 自動代筆！</div>
+        <p class="text-[12px] text-indigo-300/90 leading-relaxed">
+          這篇論文如何幫助你個人的論文推進？請點擊下方專案研究問題晶片獲取引導，並在文字框中親自撰寫對應啟發。
+        </p>
+      </div>
+
+      <!-- Interactive RQ Helper Chips -->
+      <div class="mb-3">
+        <div class="text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-2">點擊插入研究問題鷹架標籤：</div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" onclick="insertRQPrompt('RQ1')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 transition">
+            + 對 RQ1 (教學設計/鷹架機制)
+          </button>
+          <button type="button" onclick="insertRQPrompt('RQ2')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 transition">
+            + 對 RQ2 (認知負荷/評估量表)
+          </button>
+          <button type="button" onclick="insertRQPrompt('RQ3')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 transition">
+            + 對 RQ3 (工具效能/系統架構)
+          </button>
+          <button type="button" onclick="insertRQPrompt('GAP')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 transition">
+            + 本研究可推進之學術空白 (Research Gap)
+          </button>
+        </div>
+      </div>
+
+      <!-- User Writing Area -->
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <label class="text-xs font-medium text-indigo-300">研究生親自撰寫區：</label>
+          <span id="charCount" class="text-[12px] text-[var(--muted-foreground,#94a3b8)] font-mono">0 字</span>
+        </div>
+        <textarea id="dim6Insights" oninput="updateCharCount()" rows="6" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-indigo-500/40 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:outline-none leading-relaxed" placeholder="請親自深入闡述：&#10;1. 該文的研究設計如何指引你的 RQ1？&#10;2. 該文採用的量表能否借鏡於你的 RQ2？&#10;3. 我們如何推進該文未解決的學術空白？"></textarea>
+      </div>
+    </section>
+
+    <!-- Dimension 7: Tier 1 (Green) -->
+    <section class="bg-[var(--card,#1e293b)] border border-emerald-500/30 rounded-2xl p-5 shadow-sm transition hover:border-emerald-500/50">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Tier 1 自動萃取</span>
+          <h2 class="text-base font-bold text-[var(--foreground,#f8fafc)]">維度七：黃金引句與出處錨點 (Golden Quotes with Anchors)</h2>
+        </div>
+        <span class="text-xs text-emerald-400 font-medium">✓ 原文金句精確錨定</span>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">金句一（含章節與頁碼錨點）</label>
+          <input type="text" id="quote1" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 italic focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-[var(--muted-foreground,#94a3b8)] mb-1">金句二（含章節與頁碼錨點）</label>
+          <input type="text" id="quote2" class="w-full text-xs bg-[var(--background,#0f172a)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] rounded-lg px-3 py-2 italic focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Sticky Bottom Action Bar -->
+  <footer class="fixed bottom-0 left-0 right-0 z-50 bg-[var(--card,#1e293b)]/95 backdrop-blur-md border-t border-[var(--border,#334155)] py-3 px-4 md:px-8 shadow-2xl">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-[var(--muted-foreground,#94a3b8)]">卡片檔名：</span>
+        <span id="outputFileName" class="text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded border border-emerald-500/20">
+          card_2023_Kasneci_GenAI_in_Ed.md
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="validateCard()" class="px-3.5 py-1.5 rounded-xl text-xs font-medium bg-[var(--background,#0f172a)] hover:bg-[var(--border,#334155)] text-[var(--foreground,#f8fafc)] border border-[var(--border,#334155)] transition flex items-center gap-1.5">
+          <span>🔍</span> 檢查合規性
+        </button>
+        <button type="button" onclick="copyMarkdown()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition flex items-center gap-1.5 shadow-sm">
+          <span>📋</span> 複製 Markdown
+        </button>
+        <button type="button" onclick="downloadMarkdown()" class="px-4 py-1.5 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition flex items-center gap-1.5 shadow-sm">
+          <span>💾</span> 匯出卡片檔案 (.md)
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed top-5 right-5 z-50 transition-all transform translate-y-[-100px] opacity-0 duration-300 pointer-events-none">
+    <div id="toastInner" class="flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 text-white shadow-xl text-xs font-medium">
+      <span id="toastIcon">✓</span>
+      <span id="toastMsg">成功訊息</span>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // Presets database
+    const PRESETS = {
+      kasneci: {
+        bibtexKey: "kasneci2023chatgpt",
+        firstAuthor: "Kasneci, Enkelejda",
+        year: 2023,
+        paperTitle: "ChatGPT for good? On opportunities and challenges of large language models for education",
+        journal: "Learning and Individual Differences, Vol. 103, 102274",
+        doi: "10.1016/j.lindif.2023.102274",
+        sourceMd: "01_papers/extracted_text/2023_Kasneci_ChatGPT_for_good__On_opportunities.md",
+        dim2RQs: "1. 大型語言模型（LLMs）在各教育階段與不同學門中展現出哪些潛在教育應用機會？\n2. 教育機構與教學者在導入 LLMs 時面臨哪些倫理、偏見、隱私與評量挑戰？",
+        dim2Theories: "未指明單一實證理論；主要立足於教育科技前瞻架構、批判性素養（Critical Literacy）與人機協同學習潛能觀點。",
+        dim3Design: "專家立場論述論文（Position Paper / Comprehensive Perspective）",
+        dim3Sample: "無實體樣本（跨學科 20 餘位學者共同研討之文獻統整）",
+        dim3Context: "涵蓋 K-12、高等教育與終身學習之廣泛教育脈絡",
+        dim3Instruments: "無標準化實證測量量表",
+        dim4Stats: "【原文為立場論文，全篇無實證實驗數據】\n無實驗組對照組、無 N 數、無統計檢定值 (F/t/p) 及效果量。所有成效宣稱均屬學者推論倡議。",
+        dim4Themes: "提煉三大核心主題：\n1. 個人化學習適應性教學與回饋；\n2. 學生思辨能力與查證技能重構；\n3. 學術誠信評量典範轉移。",
+        dim5AuthorLimits: "作者群指出 LLMs 發展極為迅速，相關技術與政策法規瞬息萬變，且本篇多屬概念探討，缺乏縱貫性教育現場實證。",
+        dim5MyCritique: "1. 【內部效度威脅】：缺乏受控實驗驗證，不能在文獻探討中宣稱「證實了 AI 學習成效」；\n2. 【生態效度與外推邊界】：未區分成熟研究生與中小學生的認知抗幻覺能力，若盲目推廣將引發認知扭曲。",
+        dim6Insights: "- 對本研究 RQ1 (教學設計) 的啟發：\n  Kasneci 提出的「人機協同提示原則」可作為本研究課堂指引的參考，但必須補上結構化約束流程。\n- 本研究可推進的學術空白 (Research Gap)：\n  Kasneci 留下了巨大的「實證真空」！本碩士論文正是要透過受控準實驗，實證測量 Agent 對研究生認知負荷與寫作品質的具體效果量！",
+        quote1: '"The integration of generative AI into education should prioritize the enhancement of human agency and critical discernment rather than passive reliance." (Section 4, p. 5)',
+        quote2: '"Educational assessment must transition from evaluating factual recall to scrutinizing student verification strategies in AI-mediated workflows." (Section 6, p. 9)'
+      },
+      chen: {
+        bibtexKey: "chen2023scaffolding",
+        firstAuthor: "Chen, Mei-Ling",
+        year: 2023,
+        paperTitle: "Scaffolding Complex Academic Writing with Generative AI Agents: An Empirical Study in Graduate Education",
+        journal: "Computers & Education, Vol. 198, 104800",
+        doi: "10.1016/j.compedu.2023.104800",
+        sourceMd: "01_papers/extracted_text/2023_Chen_Scaffolding_GenAI_in_Higher_Ed.md",
+        dim2RQs: "1. 導入具備反思機制的 AI Agent 鷹架，對碩士生外在認知負荷（Extraneous Cognitive Load）有何影響？\n2. 學生在人機協作過程中的自我調節學習（SRL）策略如何演變？",
+        dim2Theories: "Sweller 認知負荷理論 (CLT)；Zimmerman 自我調節學習模型 (SRL)。",
+        dim3Design: "混合研究設計（混合準實驗與質性反思日誌分析）",
+        dim3Sample: "台灣國立大學教育與社科學院碩士生 N=64（實驗組 N=32，對照組 N=32）",
+        dim3Context: "為期 10 週的碩士論文開題文獻探討課程",
+        dim3Instruments: "Paas (1994) 9點心理努力量表；文獻評審規準 Rubric (Kappa = .86)",
+        dim4Stats: "外在認知負荷顯著降低：F(1, 61) = 14.82, p < .001, η_p² = .195 (大效果量)；\n文獻批判評分顯著提升：t(62) = 3.45, p = .001。",
+        dim4Themes: "對照組反思日記頻繁出現「文獻淹沒焦慮」；實驗組焦點轉向「對 Agent 進行尖銳對抗性質詢」。",
+        dim5AuthorLimits: "介入僅 10 週，樣本局限於單一人文社科領域，缺乏跨學科推論。",
+        dim5MyCritique: "1. 忽視長期依賴性：未實施撤除鷹架後的延宕後測（Delayed Post-test）；\n2. 培訓時數不等：實驗組額外獲得 2 小時 Prompt 培訓，形成指導時間偏誤。",
+        dim6Insights: "- 對 RQ1 (鷹架設計)：借鑑 10 週文獻探討三階段設計（發散、篩選、矩陣批判）。\n- 對 RQ2 (認知負荷測量)：採用 Paas 單題心理努力量表，納入每週反思日誌。\n- 本研究推進空間：補足本地 RAG 與 MCP 工具鏈的實務驗證。",
+        quote1: '"The primary bottleneck in graduate literature reviews is not the acquisition of information, but the cognitive exhaustion caused by unstructured information processing." (Section 1, p. 2)',
+        quote2: '"When AI scaffolding transitions from open-ended chat to constraint-based task execution, students shift from passive consumers of generated text to active evaluators of synthesized evidence." (Section 5, p. 9)'
+      },
+      custom: {
+        bibtexKey: "",
+        firstAuthor: "",
+        year: new Date().getFullYear(),
+        paperTitle: "",
+        journal: "",
+        doi: "",
+        sourceMd: "01_papers/extracted_text/",
+        dim2RQs: "",
+        dim2Theories: "",
+        dim3Design: "",
+        dim3Sample: "",
+        dim3Context: "",
+        dim3Instruments: "",
+        dim4Stats: "",
+        dim4Themes: "",
+        dim5AuthorLimits: "",
+        dim5MyCritique: "",
+        dim6Insights: "",
+        quote1: "",
+        quote2: ""
+      }
+    };
+
+    function loadPreset(key) {
+      const p = PRESETS[key] || PRESETS.custom;
+      document.getElementById('bibtexKey').value = p.bibtexKey;
+      document.getElementById('firstAuthor').value = p.firstAuthor;
+      document.getElementById('year').value = p.year;
+      document.getElementById('paperTitle').value = p.paperTitle;
+      document.getElementById('journal').value = p.journal;
+      document.getElementById('doi').value = p.doi;
+      document.getElementById('sourceMd').value = p.sourceMd;
+
+      document.getElementById('dim2RQs').value = p.dim2RQs;
+      document.getElementById('dim2Theories').value = p.dim2Theories;
+
+      document.getElementById('dim3Design').value = p.dim3Design;
+      document.getElementById('dim3Sample').value = p.dim3Sample;
+      document.getElementById('dim3Context').value = p.dim3Context;
+      document.getElementById('dim3Instruments').value = p.dim3Instruments;
+
+      document.getElementById('dim4Stats').value = p.dim4Stats;
+      document.getElementById('dim4Themes').value = p.dim4Themes;
+
+      document.getElementById('dim5AuthorLimits').value = p.dim5AuthorLimits;
+      document.getElementById('dim5MyCritique').value = p.dim5MyCritique;
+
+      document.getElementById('dim6Insights').value = p.dim6Insights;
+
+      document.getElementById('quote1').value = p.quote1;
+      document.getElementById('quote2').value = p.quote2;
+
+      // Reset checks
+      const isAuto = key !== 'custom';
+      document.getElementById('checkDim2').checked = isAuto;
+      document.getElementById('checkDim3').checked = isAuto;
+      document.getElementById('checkDim4').checked = isAuto;
+      document.getElementById('checkDim5').checked = isAuto;
+
+      updateFileName();
+      updateTierProgress();
+      updateCharCount();
+      showToast(`已載入「${key}」範本資料`, "info");
+    }
+
+    function updateFileName() {
+      const year = document.getElementById('year').value || '202X';
+      const authorRaw = document.getElementById('firstAuthor').value || 'Author';
+      const cleanAuthor = authorRaw.split(',')[0].replace(/[^a-zA-Z]/g, '') || 'Author';
+      const concept = 'Card';
+      const fn = `card_${year}_${cleanAuthor}_${concept}.md`;
+      document.getElementById('outputFileName').innerText = fn;
+    }
+
+    function updateTierProgress() {
+      const c2 = document.getElementById('checkDim2').checked;
+      const c3 = document.getElementById('checkDim3').checked;
+      const c4 = document.getElementById('checkDim4').checked;
+      const c5 = document.getElementById('checkDim5').checked;
+      const tier2Count = [c2, c3, c4, c5].filter(Boolean).length;
+
+      const t2El = document.getElementById('tier2Status');
+      t2El.innerText = tier2Count === 4 ? "已全部核對 ✓" : `核對中 (${tier2Count}/4)`;
+      if (tier2Count === 4) {
+        t2El.className = "text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300";
+      } else {
+        t2El.className = "text-xs font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300";
+      }
+
+      const text = document.getElementById('dim6Insights').value.trim();
+      const t3El = document.getElementById('tier3Status');
+      if (text.length >= 40) {
+        t3El.innerText = "已親筆撰寫 ✓";
+        t3El.className = "text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300";
+      } else if (text.length > 0) {
+        t3El.innerText = "主筆撰寫中";
+        t3El.className = "text-xs font-bold px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300";
+      } else {
+        t3El.innerText = "待撰寫";
+        t3El.className = "text-xs font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-300";
+      }
+      updateFileName();
+    }
+
+    function updateCharCount() {
+      const len = document.getElementById('dim6Insights').value.trim().length;
+      document.getElementById('charCount').innerText = `${len} 字`;
+      updateTierProgress();
+    }
+
+    function insertRQPrompt(type) {
+      const ta = document.getElementById('dim6Insights');
+      let promptText = "";
+      if (type === 'RQ1') {
+        promptText = "\n- 【對 RQ1 教學設計與鷹架的直接啟發】：\n  本篇的...流程可借鑑於我們的教學設計，具體落實在...";
+      } else if (type === 'RQ2') {
+        promptText = "\n- 【對 RQ2 認知負荷與評估量表的啟發】：\n  本篇採用的...評估指標具備信效度，可納入我們的研究中測量...";
+      } else if (type === 'RQ3') {
+        promptText = "\n- 【對 RQ3 工具效能與系統架構的啟發】：\n  本篇在工具互動上的限制啟發我們應強化 Agent 的...";
+      } else if (type === 'GAP') {
+        promptText = "\n- 【本研究可推進之學術空白 (Research Gap)】：\n  本篇研究未探討...，我們的碩士論文將在此基礎上推進...";
+      }
+      ta.value = ta.value ? ta.value + promptText : promptText.trim();
+      updateCharCount();
+      ta.focus();
+    }
+
+    function buildMarkdown() {
+      const bibtexKey = document.getElementById('bibtexKey').value.trim() || 'unknownKey';
+      const title = document.getElementById('paperTitle').value.trim() || 'Untitled Paper';
+      const firstAuthor = document.getElementById('firstAuthor').value.trim() || 'Author';
+      const year = document.getElementById('year').value.trim() || '2023';
+      const journal = document.getElementById('journal').value.trim() || 'Unknown Journal';
+      const doi = document.getElementById('doi').value.trim() || '';
+      const sourceMd = document.getElementById('sourceMd').value.trim() || '';
+
+      const dim2RQs = document.getElementById('dim2RQs').value.trim();
+      const dim2Theories = document.getElementById('dim2Theories').value.trim();
+
+      const dim3Design = document.getElementById('dim3Design').value.trim();
+      const dim3Sample = document.getElementById('dim3Sample').value.trim();
+      const dim3Context = document.getElementById('dim3Context').value.trim();
+      const dim3Instruments = document.getElementById('dim3Instruments').value.trim();
+
+      const dim4Stats = document.getElementById('dim4Stats').value.trim();
+      const dim4Themes = document.getElementById('dim4Themes').value.trim();
+
+      const dim5AuthorLimits = document.getElementById('dim5AuthorLimits').value.trim();
+      const dim5MyCritique = document.getElementById('dim5MyCritique').value.trim();
+
+      const dim6Insights = document.getElementById('dim6Insights').value.trim();
+
+      const quote1 = document.getElementById('quote1').value.trim();
+      const quote2 = document.getElementById('quote2').value.trim();
+
+      return `---
+type: literature_card
+card_version: 1.0
+bibtex_key: ${bibtexKey}
+title: "${title.replace(/"/g, '\\"')}"
+first_author: "${firstAuthor}"
+year: ${year}
+journal: "${journal.replace(/"/g, '\\"')}"
+doi: "${doi}"
+source_md: "${sourceMd}"
+tags: [LiteratureCard, SystematicReview, Empirical]
+created_date: ${new Date().toISOString().split('T')[0]}
+---
+
+# 文獻卡片：${firstAuthor} (${year}) - ${title}
+
+## 1. 文獻元數據與引用標識 (Metadata)
+- **標準引用 (APA 7th)：** ${firstAuthor} (${year}). ${title}. *${journal}*. https://doi.org/${doi}
+- **研究領域：** 教育科技 / 人工智慧教育應用
+- **原始文件路徑：** \`${sourceMd}\`
+
+## 2. 核心研究問題與理論框架 (RQs & Theoretical Lens)
+- **核心研究問題：**
+${dim2RQs ? dim2RQs.split('\n').map(l => l.startsWith('-') ? l : `  - ${l}`).join('\n') : '  - 未填寫'}
+- **支撐理論框架：**
+  - ${dim2Theories || '未指明特定理論'}
+
+## 3. 研究設計與實證方法論 (Methodology & Context)
+- **研究方法：** ${dim3Design || '未指定'}
+- **研究樣本與對象：** ${dim3Sample || '未指定'}
+- **研究情境與時程：** ${dim3Context || '未指定'}
+- **測量工具與信效度：** ${dim3Instruments || '未指定'}
+
+## 4. 關鍵實證數據與核心發現 (Empirical Findings)
+- **量化統計結論與效果量：**
+${dim4Stats ? dim4Stats.split('\n').map(l => `  ${l}`).join('\n') : '  - 原文未提供統計檢定值'}
+- **質性發現與編碼主題：**
+${dim4Themes ? dim4Themes.split('\n').map(l => `  ${l}`).join('\n') : '  - 無'}
+
+## 5. 批判性審視與方法學盲點 (Critical Limitations)
+- **原文作者承認之限制：**
+  - ${dim5AuthorLimits || '作者未詳列限制'}
+- **審查者獨立批判（我的觀點）：**
+${dim5MyCritique ? dim5MyCritique.split('\n').map(l => l.startsWith('-') ? l : `  - ${l}`).join('\n') : '  - 尚未填寫獨立批判觀點'}
+
+## 6. 對本研究 PROJECT.md 的直接啟發 (Actionable Insights)
+${dim6Insights || '【尚未親筆主導撰寫啟發與學術空白】'}
+
+## 7. 黃金引句與出處錨點 (Golden Quotes)
+${quote1 ? `1. *${quote1}*` : ''}
+${quote2 ? `2. *${quote2}*` : ''}
+`;
+    }
+
+    function validateCard() {
+      const errors = [];
+      if (!document.getElementById('bibtexKey').value.trim()) errors.push("維度一：缺少 BibTeX Key");
+      if (!document.getElementById('paperTitle').value.trim()) errors.push("維度一：缺少論文篇名");
+      if (!document.getElementById('dim4Stats').value.trim()) errors.push("維度四：缺少實證數據或防幻覺標註");
+      if (!document.getElementById('dim5MyCritique').value.trim()) errors.push("維度五：缺少審查者獨立批判觀點");
+      
+      const d6 = document.getElementById('dim6Insights').value.trim();
+      if (!d6 || d6.length < 30) {
+        errors.push("維度六（靈魂核心）：研究生親筆主導字數過少（需大於 30 字）");
+      }
+
+      if (errors.length > 0) {
+        showToast(`合規檢查未通過：\n` + errors.slice(0, 2).join('; '), "error");
+      } else {
+        showToast("🎉 卡片結構合規！七大維度與 RQ 映射全部符合規範！", "success");
+      }
+    }
+
+    function copyMarkdown() {
+      const md = buildMarkdown();
+      navigator.clipboard.writeText(md).then(() => {
+        showToast("✓ 已複製完整 Markdown 卡片到剪貼簿！", "success");
+      }).catch(err => {
+        showToast("複製失敗，請手動複製", "error");
+      });
+    }
+
+    function downloadMarkdown() {
+      const md = buildMarkdown();
+      const fn = document.getElementById('outputFileName').innerText.trim();
+      const blob = new Blob([md], { type: 'text/markdown;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fn;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`✓ 已匯出 ${fn}`, "success");
+    }
+
+    function showToast(msg, type = "success") {
+      const t = document.getElementById('toast');
+      const inner = document.getElementById('toastInner');
+      const msgEl = document.getElementById('toastMsg');
+      const iconEl = document.getElementById('toastIcon');
+
+      msgEl.innerText = msg;
+      if (type === "success") {
+        inner.className = "flex items-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 text-white shadow-xl text-xs font-medium";
+        iconEl.innerText = "✓";
+      } else if (type === "error") {
+        inner.className = "flex items-center gap-2 px-4 py-3 rounded-xl bg-rose-600 text-white shadow-xl text-xs font-medium";
+        iconEl.innerText = "✕";
+      } else {
+        inner.className = "flex items-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 text-white shadow-xl text-xs font-medium";
+        iconEl.innerText = "ℹ";
+      }
+
+      t.classList.remove('opacity-0', 'translate-y-[-100px]');
+      t.classList.add('opacity-100', 'translate-y-0');
+
+      setTimeout(() => {
+        t.classList.remove('opacity-100', 'translate-y-0');
+        t.classList.add('opacity-0', 'translate-y-[-100px]');
+      }, 3500);
+    }
+
+    // Initialize with Kasneci preset on load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPreset('kasneci');
+    });
+  </script>
+</body>
+</html>

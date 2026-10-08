@@ -32,6 +32,28 @@ tags:
 
 ---
 
+## 支援資源與檔案結構
+
+本 Skill 採用模組化組織架構（合併文獻與規範於 resources，不額外建立 assets），各子目錄分工如下：
+
+```text
+skills/academic_reading_card/
+│
+├── SKILL.md                          # 核心流程入口（SOP 規範、行為守則）
+│
+├── resources/                        # 靜態規範、空白範本與方法學參照（合併 references）
+│   ├── card_template.md              # 七維標準卡片空白 Schema 範本
+│   └── review_criteria.md            # 對抗性審稿檢核表與經典方法學參考文獻
+│
+├── examples/                         # 少樣本學習（Few-shot）金牌典範
+│   └── sample_reading_card.md        # 完整生產級文獻閱讀卡片範例（Chen, 2023）
+│
+└── scripts/                          # 本機自動化輔助工具
+    └── validate_card.py              # 卡片 Frontmatter 與七維結構自動驗證腳本
+```
+
+---
+
 ## 何時應使用本 Skill？
 
 當使用者提出下列需求時，Agent 應主動調用本 Skill：
@@ -48,7 +70,7 @@ tags:
 當 Agent 啟動本 Skill 後，必須按順序執行以下六個步驟：
 
 ### 第一步：定位目標論文與讀取全文
-1. 確認目標論文 Markdown 檔案路徑（通常位於 `01_papers/extracted_text/`，例如 `01_papers/extracted_text/2023_Chen_Scaffolding_GenAI_in_Higher_Ed.md`）。
+1. 確認目標論文 Markdown 檔案路徑（通常位於 `01_papers/extracted_text/`，例如 `01_papers/extracted_text/2023_Kasneci_ChatGPT_for_good__On_opportunities.md`）。
 2. 完整閱讀論文內容，掌握其研究問題、理論模型、研究方法、主要數據與結論。
 3. 若遇長篇論文或需要核對特定章節（如 Methodology, Findings），可調用向量檢索工具 `search_paper_chunks` 進行多維度事實交叉檢驗。
 
@@ -60,7 +82,7 @@ tags:
 2. 此步驟是產出【第六維度：對本研究的直接啟發】的核心前置作業，嚴禁略過！
 
 ### 第三步：啟動「對抗性審稿人（Adversarial Reviewer）」思維
-從「批判解剖的三大核心構面」切入審查，拒絕全盤接收作者結論：
+參照 `@Resource(resources/review_criteria.md)` 之檢核清單，從「批判解剖的三大核心構面」切入審查，拒絕全盤接收作者結論：
 1. **構面一：理論依據與因果邏輯（Theoretical Coherence）**
    - 檢視理論是否真正支撐假設？因果傳導路徑是否存在未控制的混淆變項？
 2. **構面二：方法學嚴謹度與效度威脅（Methodological Rigor & Threats to Validity）**
@@ -73,80 +95,21 @@ tags:
 2. 挑選 2 至 3 句最具學術張力、最適合未來直接引用於研究計畫第二章的英文原文金句，並精確標記出處章節與頁碼。
 
 ### 第五步：遵循「七維標準 Schema」生成卡片內容
-嚴格依照下述標準卡片結構進行排版與撰寫，保證 YAML Frontmatter 與 Markdown 層級完整。
+載入並遵循 `@Resource(resources/card_template.md)` 之結構規範，並參照 `@Example(examples/sample_reading_card.md)` 之寫作深度與標籤水準產出卡片，保證 YAML Frontmatter 與 Markdown 層級完整。
 
 ### 第六步：儲存卡片與人機協同確認
 1. 將生成的卡片存入工作區指定位置：
    ```text
    02_notes/cards/card_{發表年份}_{第一作者英文姓氏}_{核心概念縮寫}.md
    ```
-2. 在對話中向研究者清晰回報：
+2. （選配）可於終端機執行 `@Script(scripts/validate_card.py)` 自動驗證卡片格式合規性：
+   ```bash
+   python skills/academic_reading_card/scripts/validate_card.py 02_notes/cards/card_{檔名}.md
+   ```
+3. 在對話中向研究者清晰回報：
    - 卡片檔案路徑
    - 本篇論文對專案（RQ1-RQ3）的核心啟發精要
    - 請研究者核對第 4 維度數據與第 5 維度批判觀點，確保人機協同共識。
-
----
-
-## 七維標準學術卡片輸出規格（Output Schema）
-
-產出的卡片檔案必須嚴格符合以下結構：
-
-```markdown
----
-type: literature_card
-card_version: 1.0
-bibtex_key: {bibtex_key}
-title: "{完整英文論文篇名}"
-first_author: "{第一作者英文姓氏, 名字}"
-year: {發表年份}
-journal: "{期刊或會議名稱}"
-doi: "{DOI}"
-source_md: "01_papers/extracted_text/{原始論文檔名.md}"
-tags: [{關鍵標籤1}, {關鍵標籤2}, {關鍵標籤3}]
-created_date: {YYYY-MM-DD}
----
-
-# 文獻卡片：{第一作者姓氏} ({年份}) - {繁體中文簡明主題}
-
-## 1. 文獻元數據與引用標識 (Metadata)
-- **標準引用 (APA 7th)：** {完整 APA 7th 參考文獻格式}
-- **研究領域：** {所屬學術學門與次領域}
-- **原始文件路徑：** `{source_md}`
-
-## 2. 核心研究問題與理論框架 (RQs & Theoretical Lens)
-- **核心研究問題：**
-  1. {問題一}
-  2. {問題二}
-- **支撐理論框架：**
-  - {理論名稱及原作者}：{該理論在本文中的具體操作機制}
-
-## 3. 研究設計與實證方法論 (Methodology & Context)
-- **研究方法：** {準實驗設計 / 質性個案 / 問卷調查 / 混合研究}
-- **研究對象與樣本量：** {樣本數 N、人口統計特徵、抽樣方式}
-- **研究情境：** {介入時長、實體課堂 / 線上實驗環境}
-- **測量工具：** {使用的量表全稱、施測時程、信效度指標}
-
-## 4. 關鍵實證數據與核心發現 (Empirical Findings)
-- **量化統計結論：**
-  - {列出具體統計數據，如 F/t/p/效果量，切勿只有空泛結論}
-- **質性發現（若有）：**
-  - {核心編碼主題與深度質性洞察}
-
-## 5. 批判性審視與方法學盲點 (Critical Limitations)
-- **作者承認之限制：** {論文 Limitations 章節提煉}
-- **審查者獨立批判（對抗性審查觀點）：**
-  1. {方法學漏洞 / 效度威脅一}
-  2. {外推限制 / 理論脫節二}
-
-## 6. 對本研究 PROJECT.md 的直接啟發 (Actionable Insights)
-- **對 RQ1（教學設計與鷹架）的啟發：** {具體借鑑或借鏡避免之處}
-- **對 RQ2（認知轉變與歷程）的啟發：** {量表/日誌/測量方式的啟發}
-- **本研究可推進的空間（Research Gap）：** {我們能在該文基礎上推進哪一步？}
-
-## 7. 黃金引句與出處錨點 (Golden Quotes)
-1. *"{原文英文金句 1}"* — {章節標題, 頁碼/段落}
-2. *"{原文英文金句 2}"* — {章節標題, 頁碼/段落}
-```
 
 ---
 
