@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "啟動學術卡片維護中心 (Card Hub)",
+      "type": "shell",
+      "command": "C:\\Users\\Leo\\anaconda3\\Scripts\\streamlit.exe run skills/academic_reading_card/scripts/card_hub_app.py",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

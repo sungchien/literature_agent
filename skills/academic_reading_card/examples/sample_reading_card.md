@@ -55,10 +55,12 @@ created_date: 2026-09-28
   - 可直接借鑑 Chen (2023) 的 10 週進度節奏，將文獻探討拆分為「概念發散、篩選驗證、批判矩陣」三階段，並將此流程寫入我們課程的課堂引導講義中。
 - **對 RQ2（認知負荷與日誌分析）的啟發：**
   - Chen 使用的 Paas 心理努力量表設計簡短（僅單一題目），非常適合放入我們工作區的 `04_research_data/diaries/` 每週反思問卷中，不造成學生額外填寫負擔。
+- **對 RQ3（人機協同瓶頸與實務障礙）的啟發：**
+  - 與本 RQ 無直接關聯（該文聚焦於認知負荷與寫作品質之量化成效驗證，未針對人機協作過程中的質性障礙或幻覺防禦進行探討；此處誠實標註無直接關聯，絕不強行牽強硬湊）。
 - **本研究可推進的空間（Research Gap）：**
   - Chen 的研究未探討「本機 RAG 向量檢索」與「MCP 工具鏈」的具體工程架構。我們的研究可在此基礎上，進一步論證「具備本地檔案感知與 PRISMA 追蹤機制的 Agent」如何進一步降低學生的工具中斷焦慮！
 
-## 7. 黃金引句與出處錨點 (Golden Quotes)
+## 7. 核心原文引述與出處錨點 (Key Direct Quotes)
 1. *"The primary bottleneck in graduate literature reviews is not the acquisition of information, but the cognitive exhaustion caused by unstructured information processing."*
    — Section 1. Introduction, p. 2.
 2. *"When AI scaffolding transitions from open-ended chat to constraint-based task execution, students shift from passive consumers of generated text to active evaluators of synthesized evidence."*

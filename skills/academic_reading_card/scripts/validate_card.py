@@ -29,7 +29,7 @@ REQUIRED_SECTIONS = [
     (4, "關鍵實證數據與核心發現"),
     (5, "批判性審視與方法學盲點"),
     (6, "對本研究 PROJECT.md 的直接啟發"),
-    (7, "黃金引句與出處錨點"),
+    (7, "核心原文引述與出處錨點"),
 ]
 
 def validate_card(file_path: str) -> bool:
@@ -62,11 +62,11 @@ def validate_card(file_path: str) -> bool:
         if not re.search(pattern, content, re.MULTILINE):
             errors.append(f"缺少第 {num} 維度標題：## {num}. {title}")
 
-    # 3. 檢查第 6 維度是否包含 RQ 映射
+    # 3. 檢查第 6 維度是否包含 RQ 映射或無關說明
     if "## 6." in content:
         sec6_text = content.split("## 6.")[1].split("## 7.")[0] if "## 7." in content else content.split("## 6.")[1]
-        if not re.search(r"RQ[1-3]", sec6_text):
-            warnings.append("第 6 維度建議明確提及 RQ1、RQ2 或 RQ3 的對接啟發")
+        if not re.search(r"RQ[1-3]|無直接關聯|無關", sec6_text):
+            warnings.append("第 6 維度建議明確提及 RQ1、RQ2 或 RQ3 的對接啟發（若該文與某 RQ 無關請如實標註『與本 RQ 無直接關聯』）")
 
     # 4. 輸出檢驗結果
     print("\n==========================================")
