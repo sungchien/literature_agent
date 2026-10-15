@@ -26,7 +26,26 @@
 
 ---
 
-## 二、學理基礎與經典參考文獻（Methodological References, APA 7th）
+## 二、文類適配與防強套審查原則（Genre-Appropriate Review & Anti-Forced Fitting）
+
+評審與卡片提煉必須根據目標論文的**真實學術文類（Genre）**採取合適的檢驗標準，嚴禁削足適履：
+
+1. **系統性文獻回顧與元分析（SLR / Meta-Analysis / Bibliometrics）：**
+   - **審查重點：** 資料庫檢索完整性、PRISMA 篩選流程透明度、納入/排除標準偏誤、編碼者間信度（Inter-rater Reliability / Kappa）。
+   - **防強套紀律：** 綜述論文通常旨在梳理全貌或繪製工具生態，**絕大多數無單一理論框架、無人類受試者、無心理施測量表**。此時第二維度理論框架必須如實填寫「無特定單一理論框架」，樣本填寫文獻篇數，嚴禁生造理論或量表！
+2. **概念架構與前瞻立場論文（Position / Conceptual Papers）：**
+   - **審查重點：** 辨識其為「學者觀點藍圖」而非「實證檢定事實」；剖析因果推導中被省略的中介黑盒子。
+   - **防強套紀律：** 原文若未提供推論統計，量化結論必須填寫「無量化統計檢定」，嚴禁將文中百分比或頁碼捏造為統計檢定值。
+3. **技術工具開發與系統評測（Tool / Benchmark / Architecture Papers）：**
+   - **審查重點：** 基準測試集（Benchmark）是否過於狹隘或飽和、是否具備開源重現性（Reproducibility）、Token 消耗與延遲等實務開銷。
+   - **防強套紀律：** 不得套用教育實驗的「教學介入時長」或「學生量表」，相關子項目填寫「不適用」或基準集指標。
+4. **對自身研究 PROJECT.md 的映射紀律（Anti-Forced RQ Mapping）：**
+   - **精準對接：** 單篇論文通常只深耕一個核心切面。若目標文獻僅能支援教學設計（RQ1），而與認知負荷（RQ2）無關，**嚴禁強行生造文字，必須直接標註「與本 RQ 無直接關聯」**！
+   - **維持純淨：** 卡片庫的價值在於高純度的真實知識，誠實標註無關才能讓跨篇文獻矩陣展現清晰的論據分工。
+
+---
+
+## 三、學理基礎與經典參考文獻（Methodological References, APA 7th）
 
 ### 1. 批判閱讀、效度威脅與理論評價
 - **Booth, W. C., Colomb, G. G., Williams, J. M., Bizup, J., & FitzGerald, W. T. (2016).** *The craft of research* (4th ed.). University of Chicago Press.
