@@ -36,31 +36,160 @@ def sanitize_filename(name: str) -> str:
     return s.strip("._")
 
 
+# 匹配文末參考文獻標題之強健正則表達式
+# 支援：# 至 ######、粗體/斜體包裹（如 ## **References**）、章節編號（如 ## 7. References）、
+# Wiley 字母間距排版（如 ### **R E FE R E N CES**）以及 BMC 行內清單（如 - **References** 1. ...）
+REF_HEADING_PATTERN = re.compile(
+    r"^(?:#{1,6}\s*|[-*+]\s+|\*{1,3}\s*)+"
+    r"(?:\d+(?:\.\d+)*\.?\s*|[IVX]+\.?\s*)?"
+    r"[\*_~\s]*"
+    r"(?:r\s*e\s*f\s*e\s*r\s*e\s*n\s*c\s*e\s*s?|b\s*i\s*b\s*l\s*i\s*o\s*g\s*r\s*a\s*p\s*h\s*y|works\s+cited|literature\s+cited|參考文獻|引用書目|參考書目)"
+    r"[\*_~:\s]*(?:\s+1\.\s+.*)?$",
+    re.IGNORECASE,
+)
+
+# 正規化後（去除空白與標點）之參考文獻標題集合
+REF_COLLAPSED_TITLES = {
+    "references",
+    "reference",
+    "bibliography",
+    "workscited",
+    "literaturecited",
+    "參考文獻",
+    "引用書目",
+    "參考書目",
+}
+
+# 正規化後（去除空白與標點）之文末/前置行政聲明章節正則表達式
+ADMIN_COLLAPSED_PATTERN = re.compile(
+    r"^("
+    r"acknowledg(e)?ments?|"
+    r"(credit)?authors?(hip)?contributions?(statement)?|"
+    r"funding(information|sources?)?|"
+    r"declarations?|"
+    r"declarationofcompetinginterests?|"
+    r"declarationofconflictinginterests?|"
+    r"competinginterests?|"
+    r"conflicts?ofinterests?(statement)?|"
+    r"dataavailability(statement)?|"
+    r"availabilityofdata(andmaterials)?|"
+    r"ethics(statement|approval.*)|"
+    r"ethicalapproval.*|"
+    r"consentforpublication|"
+    r"consenttoparticipate|"
+    r"authordetails?|"
+    r"authors?andaffiliations?|"
+    r"correspondence|"
+    r"orcid|"
+    r"publishers?note|"
+    r"supplementary(information|materials?)|"
+    r"supportinginformation|"
+    r"abbreviations?|"
+    r"endnotes?|"
+    r"acmreferenceformat|"
+    r"openaccess|"
+    r"致謝|鳴謝|作者貢獻|利益衝突|經費聲明"
+    r")$",
+    re.IGNORECASE,
+)
+
+# 常見頁碼、版權宣告與無效噪音樣式
+NOISE_LINE_PATTERN = re.compile(
+    r"^(?:"
+    r"page \d+|\d+\s*/\s*\d+|downloaded from|https?://doi\.org/|"
+    r">?\s*©\s*(?:the author\(s\)|\d{4}).*|"
+    r"permission to make digital or hard copies of all or part of this work.*|"
+    r"\*{1,2}(?:funding|ethics approval[^*]*|competing interests|conflicts? of interest|authors?'? contributions?|acknowledg(e)?ments?)\*{1,2}\s*(?:not applicable|none|the authors? declare.*)"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def classify_markdown_heading(stripped_line: str, line_idx: int = 0, total_lines: int = 1) -> str:
+    """
+    判斷單行是否為 Markdown 章節標題，並細分為：
+    - 'REF': 參考文獻章節（應立即截斷）
+    - 'ADMIN': 行政聲明章節（如致謝、利益衝突、經費、ORCID、作者貢獻等，應予攔截跳過）
+    - 'BODY': 論文正規內文章節
+    - 'TEXT': 一般內文段落行（非標題）
+    """
+    if not stripped_line:
+        return "TEXT"
+
+    if REF_HEADING_PATTERN.match(stripped_line):
+        return "REF"
+
+    is_md_heading = stripped_line.startswith("#")
+    is_bold_line = (
+        stripped_line.startswith("**")
+        and stripped_line.endswith("**")
+        and len(stripped_line) < 90
+    )
+    if not (is_md_heading or is_bold_line):
+        return "TEXT"
+
+    # 剝除開頭與結尾的 Markdown 標記（#, *, _, >, -）及前綴章節編號
+    cleaned = re.sub(r"^[#*>\-\s_]+|[*_:\s]+$", "", stripped_line)
+    cleaned_no_num = re.sub(r"^(?:\d+(?:\.\d+)*\.?\s*|[IVX]+\.?\s*)", "", cleaned)
+    collapsed = re.sub(r"[\s\W_]+", "", cleaned_no_num).lower()
+
+    if not collapsed:
+        return "TEXT"
+
+    if collapsed in REF_COLLAPSED_TITLES:
+        return "REF"
+
+    if ADMIN_COLLAPSED_PATTERN.match(collapsed):
+        return "ADMIN"
+
+    # 若標題單純為 "Ethics"（如 ACL 論文文末之 "## 8 Ethics"），僅在位於全文後 30% 時視為行政聲明
+    if collapsed == "ethics" and total_lines > 0 and (line_idx / total_lines) >= 0.70:
+        return "ADMIN"
+
+    return "BODY"
+
+
 def clean_academic_markdown(md_text: str) -> str:
     """
     清洗學術文字噪音：
-    1. 移除 References / Bibliography 之後的龐大引用列表
-    2. 消除多餘的頁碼與出版聲明行
-    3. 合併連續過多空白行
+    1. 精準識別並截斷 References / Bibliography 之後的龐大引用列表（支援粗體、多級標題与字母間距格式）
+    2. 攔截並剔除文末與前置行政聲明段落（Acknowledgements, Declarations, Funding, Competing interests, ORCID 等）
+    3. 消除多餘的頁碼與出版版權聲明行
+    4. 合併連續過多空白行
     """
     lines = md_text.split("\n")
+    total_lines = len(lines)
     cleaned_lines = []
+    skip_admin_section = False
 
-    # 常見參考文獻標題樣式
-    ref_pattern = re.compile(r"^#{1,3}\s*(references|bibliography|works cited|參考文獻)", re.IGNORECASE)
-    # 常見頁碼與無效噪音樣式
-    noise_pattern = re.compile(r"^(page \d+|\d+\s*/\s*\d+|downloaded from|https?://doi\.org/)", re.IGNORECASE)
-
-    for line in lines:
+    for line_idx, line in enumerate(lines):
         stripped = line.strip()
 
-        # 截斷檢測：一旦讀到 References 章節標題，終止後續解析以節省空間
-        if ref_pattern.match(stripped):
-            cleaned_lines.append("\n\n---\n*（備註：系統已自動截斷後續 References 引用列表，以維護上下文純淨度）*")
+        heading_kind = classify_markdown_heading(stripped, line_idx, total_lines)
+
+        # 1. 截斷檢測：一旦讀到 References 章節標題，終止後續解析以節省空間並杜絕引用雜訊
+        if heading_kind == "REF":
+            cleaned_lines.append(
+                "\n\n---\n*（備註：系統已自動截斷後續 References 引用列表，以維護上下文純淨度）*"
+            )
             break
 
-        # 噪音濾除：跳過純頁碼與常見版權行
-        if noise_pattern.match(stripped):
+        # 2. 行政章節攔截：遇到致謝、利益衝突、作者貢獻、ORCID 等章節時跳過該區段
+        if heading_kind == "ADMIN":
+            skip_admin_section = True
+            continue
+
+        # 3. 遇到正規內文標題時，解除行政章節跳過狀態
+        if heading_kind == "BODY":
+            skip_admin_section = False
+            cleaned_lines.append(line)
+            continue
+
+        if skip_admin_section:
+            continue
+
+        # 4. 噪音濾除：跳過純頁碼與常見版權宣告行
+        if NOISE_LINE_PATTERN.match(stripped):
             continue
 
         cleaned_lines.append(line)

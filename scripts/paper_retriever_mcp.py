@@ -56,7 +56,8 @@ if sys.platform == "win32":
 
 
 # 定義工作區目錄與雙檔常數
-PAPERS_DIR = Path("01_papers")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PAPERS_DIR = Path("01_papers") if Path("01_papers").exists() else PROJECT_ROOT / "01_papers"
 EXTRACTED_DIR = PAPERS_DIR / "extracted_text"
 INDEX_FILE = PAPERS_DIR / "vector_index.json"          # 輕量結構化文字與元數據
 VECTORS_FILE = PAPERS_DIR / "vector_embeddings.npz"    # 二進位稠密向量矩陣
@@ -86,7 +87,6 @@ def get_embedding_model():
         # 加載 BAAI/bge-base-en-v1.5 嵌入模型（768 維度，~438 MB）
         _MODEL = SentenceTransformer(MODEL_NAME)
     return _MODEL
-    return _MODEL
 
 
 def tokenize(text: str) -> List[str]:
@@ -94,60 +94,195 @@ def tokenize(text: str) -> List[str]:
     return re.findall(r'[a-zA-Z]{2,}|[\u4e00-\u9fa5]', text.lower())
 
 
+# 匹配文末參考文獻標題之強健正則表達式
+# 支援：# 至 ######、粗體/斜體包裹（如 ## **References**）、章節編號（如 ## 7. References）、
+# Wiley 字母間距排版（如 ### **R E FE R E N CES**）以及 BMC 行內清單（如 - **References** 1. ...）
+REF_HEADING_PATTERN = re.compile(
+    r"^(?:#{1,6}\s*|[-*+]\s+|\*{1,3}\s*)+"
+    r"(?:\d+(?:\.\d+)*\.?\s*|[IVX]+\.?\s*)?"
+    r"[\*_~\s]*"
+    r"(?:r\s*e\s*f\s*e\s*r\s*e\s*n\s*c\s*e\s*s?|b\s*i\s*b\s*l\s*i\s*o\s*g\s*r\s*a\s*p\s*h\s*y|works\s+cited|literature\s+cited|參考文獻|引用書目|參考書目)"
+    r"[\*_~:\s]*(?:\s+1\.\s+.*)?$",
+    re.IGNORECASE,
+)
+
+# 正規化後（去除空白與標點）之參考文獻標題集合
+REF_COLLAPSED_TITLES = {
+    "references",
+    "reference",
+    "bibliography",
+    "workscited",
+    "literaturecited",
+    "參考文獻",
+    "引用書目",
+    "參考書目",
+}
+
+# 正規化後（去除空白與標點）之文末/前置行政聲明章節正則表達式（不納入向量索引）
+ADMIN_COLLAPSED_PATTERN = re.compile(
+    r"^("
+    r"acknowledg(e)?ments?|"
+    r"(credit)?authors?(hip)?contributions?(statement)?|"
+    r"funding(information|sources?)?|"
+    r"declarations?|"
+    r"declarationofcompetinginterests?|"
+    r"declarationofconflictinginterests?|"
+    r"competinginterests?|"
+    r"conflicts?ofinterests?(statement)?|"
+    r"dataavailability(statement)?|"
+    r"availabilityofdata(andmaterials)?|"
+    r"ethics(statement|approval.*)|"
+    r"ethicalapproval.*|"
+    r"consentforpublication|"
+    r"consenttoparticipate|"
+    r"authordetails?|"
+    r"authors?andaffiliations?|"
+    r"correspondence|"
+    r"orcid|"
+    r"publishers?note|"
+    r"supplementary(information|materials?)|"
+    r"supportinginformation|"
+    r"abbreviations?|"
+    r"endnotes?|"
+    r"acmreferenceformat|"
+    r"openaccess|"
+    r"致謝|鳴謝|作者貢獻|利益衝突|經費聲明"
+    r")$",
+    re.IGNORECASE,
+)
+
+# 出版商版權宣告與系統截斷備註段落過濾正則
+BOILERPLATE_CHUNK_PATTERN = re.compile(
+    r"(?:"
+    r"creative commons attribution.*license|"
+    r"permission to make digital or hard copies of all or part of this work|"
+    r"備註：系統已自動截斷後續 references 引用列表|"
+    r"^©\s*(?:the author\(s\)|\d{4})"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def classify_markdown_heading(stripped_line: str, line_idx: int = 0, total_lines: int = 1) -> str:
+    """
+    判斷單行是否為 Markdown 章節標題，並分類為：
+    - 'REF': 參考文獻章節（立即終止後續切塊，不建立 References 的 Embedding Index）
+    - 'ADMIN': 行政聲明章節（如致謝、利益衝突、經費、ORCID、作者貢獻等，攔截不納入索引）
+    - 'BODY': 論文正規內文章節
+    - 'TEXT': 一般內文段落行（非標題）
+    """
+    if not stripped_line:
+        return "TEXT"
+
+    if REF_HEADING_PATTERN.match(stripped_line):
+        return "REF"
+
+    is_md_heading = stripped_line.startswith("#")
+    is_bold_line = (
+        stripped_line.startswith("**")
+        and stripped_line.endswith("**")
+        and len(stripped_line) < 90
+    )
+    if not (is_md_heading or is_bold_line):
+        return "TEXT"
+
+    # 剝除開頭與結尾的 Markdown 標記（#, *, _, >, -）及前綴章節編號
+    cleaned = re.sub(r"^[#*>\-\s_]+|[*_:\s]+$", "", stripped_line)
+    cleaned_no_num = re.sub(r"^(?:\d+(?:\.\d+)*\.?\s*|[IVX]+\.?\s*)", "", cleaned)
+    collapsed = re.sub(r"[\s\W_]+", "", cleaned_no_num).lower()
+
+    if not collapsed:
+        return "TEXT"
+
+    if collapsed in REF_COLLAPSED_TITLES:
+        return "REF"
+
+    if ADMIN_COLLAPSED_PATTERN.match(collapsed):
+        return "ADMIN"
+
+    # 若標題單純為 "Ethics"（如 ACL 論文文末之 "## 8 Ethics"），僅在位於全文後 30% 時視為行政聲明
+    if collapsed == "ethics" and total_lines > 0 and (line_idx / total_lines) >= 0.70:
+        return "ADMIN"
+
+    return "BODY"
+
+
+def clean_section_title(raw_heading: str) -> str:
+    """清理章節標題中之 Markdown 粗體、斜體與底線標籤，保持元數據整潔"""
+    s = raw_heading.lstrip("#").strip()
+    s = re.sub(r"</?u>", "", s)
+    s = re.sub(r"[\*_]+", "", s).strip()
+    return s or "Introduction / Overview"
+
+
 def chunk_markdown_file(file_path: Path) -> List[Dict[str, Any]]:
-    """將 Markdown 檔案依據標題與雙換行切分為結構化段落區塊（Chunks）"""
-    chunks = []
+    """
+    將 Markdown 檔案依據標題與雙換行切分為結構化段落區塊（Chunks）。
+    採用【方法二：不建立 References 的 Embedding Index】：
+    1. 遇到 References / Bibliography 標題時立即終止切塊（break），杜絕書目高密度標題干擾檢索排序。
+    2. 攔截文末與前置行政聲明段落（Acknowledgements, Declarations, Funding, Competing interests, ORCID 等）。
+    3. 過濾版權宣告與過短碎屑行。
+    """
+    chunks: List[Dict[str, Any]] = []
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     lines = content.split("\n")
+    total_lines = len(lines)
     current_section = "Introduction / Overview"
-    buffer = []
+    skip_current_section = False
+    buffer: List[str] = []
     chunk_counter = 1
 
-    for line in lines:
-        stripped = line.strip()
-        # 遇到 Markdown 標題時，更新當前章節名稱並封裝前置區塊
-        if stripped.startswith("#"):
-            if buffer:
-                chunk_text = " ".join(buffer).strip()
-                if len(tokenize(chunk_text)) >= 15:  # 過濾過短的瑣碎行
-                    chunks.append({
-                        "chunk_id": f"{file_path.stem}_chunk_{chunk_counter}",
-                        "file": file_path.name,
-                        "section": current_section,
-                        "text": chunk_text
-                    })
-                    chunk_counter += 1
-                buffer = []
-            current_section = stripped.lstrip("#").strip()
-            continue
-
-        if stripped == "":
-            if buffer:
-                chunk_text = " ".join(buffer).strip()
-                if len(tokenize(chunk_text)) >= 20:
-                    chunks.append({
-                        "chunk_id": f"{file_path.stem}_chunk_{chunk_counter}",
-                        "file": file_path.name,
-                        "section": current_section,
-                        "text": chunk_text
-                    })
-                    chunk_counter += 1
-                buffer = []
-        else:
-            buffer.append(stripped)
-
-    if buffer:
+    def flush_buffer(min_tokens: int) -> None:
+        nonlocal buffer, chunk_counter
+        if not buffer:
+            return
+        if skip_current_section:
+            buffer = []
+            return
         chunk_text = " ".join(buffer).strip()
-        if len(tokenize(chunk_text)) >= 15:
+        buffer = []
+        if not chunk_text or BOILERPLATE_CHUNK_PATTERN.search(chunk_text):
+            return
+        if len(tokenize(chunk_text)) >= min_tokens:
             chunks.append({
                 "chunk_id": f"{file_path.stem}_chunk_{chunk_counter}",
                 "file": file_path.name,
                 "section": current_section,
                 "text": chunk_text
             })
+            chunk_counter += 1
 
+    for line_idx, line in enumerate(lines):
+        stripped = line.strip()
+        heading_kind = classify_markdown_heading(stripped, line_idx, total_lines)
+
+        # 1. 遇到 References 標題：先封裝前置內文段落，隨後立即停止切塊（不建立 References 向量索引）
+        if heading_kind == "REF":
+            flush_buffer(15)
+            break
+
+        # 2. 遇到行政聲明標題：封裝前置內文段落，並標記跳過當前行政區段
+        if heading_kind == "ADMIN":
+            flush_buffer(15)
+            skip_current_section = True
+            continue
+
+        # 3. 遇到正規內文標題：封裝前置段落、解除跳過狀態並更新當前章節名稱
+        if heading_kind == "BODY":
+            flush_buffer(15)
+            skip_current_section = False
+            current_section = clean_section_title(stripped)
+            continue
+
+        if stripped == "":
+            flush_buffer(20)
+        else:
+            if not skip_current_section:
+                buffer.append(stripped)
+
+    flush_buffer(15)
     return chunks
 
 
