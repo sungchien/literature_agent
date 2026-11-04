@@ -1,0 +1,1155 @@
+{
+  "metadata": {
+    "total_papers": 28,
+    "total_raw_chunks": 793,
+    "valid_modeled_chunks": 659,
+    "topic_count": 6,
+    "total_network_edges": 2724,
+    "cross_paper_edges": 2227,
+    "pipeline": {
+      "dim_reduction": "UMAP (5-dim)",
+      "clustering": "Official BERTopic (UMAP + HDBSCAN + c-TF-IDF)",
+      "initial_outliers_merged": 10,
+      "c_tfidf_avg_words_A": 26096.3
+    },
+    "generated_at": "2026-11-04 08:34:49"
+  },
+  "topics": [
+    {
+      "topic_id": 0,
+      "name": "Topic 0: review / screening / tools",
+      "short_label": "review / screening / tools",
+      "chunk_count": 179,
+      "keywords": [
+        {
+          "term": "review",
+          "c_tfidf": 0.0463
+        },
+        {
+          "term": "screening",
+          "c_tfidf": 0.0439
+        },
+        {
+          "term": "tools",
+          "c_tfidf": 0.0427
+        },
+        {
+          "term": "systematic",
+          "c_tfidf": 0.0381
+        },
+        {
+          "term": "papers",
+          "c_tfidf": 0.0367
+        },
+        {
+          "term": "automation",
+          "c_tfidf": 0.0303
+        },
+        {
+          "term": "relevant",
+          "c_tfidf": 0.0271
+        },
+        {
+          "term": "extraction",
+          "c_tfidf": 0.0271
+        },
+        {
+          "term": "title",
+          "c_tfidf": 0.0256
+        },
+        {
+          "term": "search",
+          "c_tfidf": 0.0255
+        }
+      ],
+      "paper_coverage": 16,
+      "share_pct": 27.2,
+      "representative_chunks": [
+        {
+          "chunk_id": "2024_Ofori-Boateng_Towards_the_automation_of_systemati_chunk_52",
+          "paper": "2024_Ofori-Boateng_Towards_the_automation_of_systemati.md",
+          "section": "Page 51",
+          "excerpt": "Towards the automation of systematic reviews using natural… 1 3 200 sources. This highlights a significant opportunity for developing NLP methods specifically tailored for RoB assessment. Finally, the survey reveals potential areas for AI Automa- tion developm..."
+        },
+        {
+          "chunk_id": "2024_Ofori-Boateng_Towards_the_automation_of_systemati_chunk_34",
+          "paper": "2024_Ofori-Boateng_Towards_the_automation_of_systemati.md",
+          "section": "Page 33",
+          "excerpt": "Towards the automation of systematic reviews using natural… 1 3 200 data sets. The findings indicate that BERT models and their variants offer an accessible and efficient solution for the screening phase of SR. Natukunda and Muchene (2023) also presented the u..."
+        },
+        {
+          "chunk_id": "2023_Guo_Automated_Paper_Screening_for_Clini_chunk_1",
+          "paper": "2023_Guo_Automated_Paper_Screening_for_Clini.md",
+          "section": "Page 1",
+          "excerpt": "Automated Paper Screening for Clinical Reviews Using Large Language Models Eddie Guo1,∗, Mehul Gupta1, Jiawen Deng2, Ye-Jean Park2, Mike Paget1, Christopher Naugler1 1Cumming School of Medicine, University of Calgary, Calgary, Canada 2Temerty Faculty of Medici..."
+        }
+      ]
+    },
+    {
+      "topic_id": 1,
+      "name": "Topic 1: chatgpt / students / chatbots",
+      "short_label": "chatgpt / students / chatbots",
+      "chunk_count": 120,
+      "keywords": [
+        {
+          "term": "chatgpt",
+          "c_tfidf": 0.0934
+        },
+        {
+          "term": "students",
+          "c_tfidf": 0.0333
+        },
+        {
+          "term": "chatbots",
+          "c_tfidf": 0.0327
+        },
+        {
+          "term": "generative",
+          "c_tfidf": 0.0304
+        },
+        {
+          "term": "learning",
+          "c_tfidf": 0.0302
+        },
+        {
+          "term": "education",
+          "c_tfidf": 0.0278
+        },
+        {
+          "term": "information",
+          "c_tfidf": 0.0229
+        },
+        {
+          "term": "human",
+          "c_tfidf": 0.0224
+        },
+        {
+          "term": "technology",
+          "c_tfidf": 0.0223
+        },
+        {
+          "term": "chatbot",
+          "c_tfidf": 0.0194
+        }
+      ],
+      "paper_coverage": 8,
+      "share_pct": 18.2,
+      "representative_chunks": [
+        {
+          "chunk_id": "2024_Akpan_Conversational_and_generative_artif_chunk_8",
+          "paper": "2024_Akpan_Conversational_and_generative_artif.md",
+          "section": "Page 8",
+          "excerpt": "1258 I. J. Akpan et al. / Intl. Trans. in Op. Res. 32 (2025) 1251–1281 Fig. 3. Usage frequency of scientiﬁc literature on generative AI (chatbot and ChatGPT) in education in the last six months (U1) and from 2015 to 2023 (U2) based on WoS bibliographic data. “..."
+        },
+        {
+          "chunk_id": "2024_Akpan_Conversational_and_generative_artif_chunk_4",
+          "paper": "2024_Akpan_Conversational_and_generative_artif.md",
+          "section": "Page 4",
+          "excerpt": "1254 I. J. Akpan et al. / Intl. Trans. in Op. Res. 32 (2025) 1251–1281 Table 1 Literature survey and data collection process: Search and retrieval, ﬁltering, screening, and selection criteria of scientiﬁc literature on generative artiﬁcial intelligence (AI) in..."
+        },
+        {
+          "chunk_id": "2024_Akpan_Conversational_and_generative_artif_chunk_7",
+          "paper": "2024_Akpan_Conversational_and_generative_artif.md",
+          "section": "Page 7",
+          "excerpt": "I. J. Akpan et al. / Intl. Trans. in Op. Res. 32 (2025) 1251–1281 1257 Fig. 1. Annual scientiﬁc literature publications (SLP) and citation impact trends on generative artiﬁcial intelligence (AI) and open AI (chatbots and ChatGPT) in higher education (2006–2023..."
+        }
+      ]
+    },
+    {
+      "topic_id": 2,
+      "name": "Topic 2: learning / students / genai",
+      "short_label": "learning / students / genai",
+      "chunk_count": 106,
+      "keywords": [
+        {
+          "term": "learning",
+          "c_tfidf": 0.0871
+        },
+        {
+          "term": "students",
+          "c_tfidf": 0.0419
+        },
+        {
+          "term": "genai",
+          "c_tfidf": 0.0391
+        },
+        {
+          "term": "design",
+          "c_tfidf": 0.0333
+        },
+        {
+          "term": "education",
+          "c_tfidf": 0.0329
+        },
+        {
+          "term": "systems",
+          "c_tfidf": 0.0286
+        },
+        {
+          "term": "human",
+          "c_tfidf": 0.0266
+        },
+        {
+          "term": "aied",
+          "c_tfidf": 0.026
+        },
+        {
+          "term": "learners",
+          "c_tfidf": 0.0223
+        },
+        {
+          "term": "srl",
+          "c_tfidf": 0.0212
+        }
+      ],
+      "paper_coverage": 11,
+      "share_pct": 16.1,
+      "representative_chunks": [
+        {
+          "chunk_id": "2024_Giannakos_The_promise_and_challenges_of_gener_chunk_14",
+          "paper": "2024_Giannakos_The_promise_and_challenges_of_gener.md",
+          "section": "Page 14",
+          "excerpt": "has the potential to be as effective as traditionally pro­ duced expert content (Leiker et al. 2023b). Despite these promising findings, unless significant resources, time, effort, and data are used to patch them, the lack of stable world models in transformer..."
+        },
+        {
+          "chunk_id": "2024_Giannakos_The_promise_and_challenges_of_gener_chunk_21",
+          "paper": "2024_Giannakos_The_promise_and_challenges_of_gener.md",
+          "section": "Page 21",
+          "excerpt": "gaied.org/neurips2023/), the research community has started to portray GenAI’s best practices for learning, as well as inappropriate practices. One direction that becomes clear is that the best results would emerge with appropriate augmentation and coordinatio..."
+        },
+        {
+          "chunk_id": "2024_Zhou_Unveiling_Students’_Experiences_and_chunk_21",
+          "paper": "2024_Zhou_Unveiling_Students’_Experiences_and.md",
+          "section": "Page 15",
+          "excerpt": "Supporting Self-Directed Learning through AI Our findings affirm that AI supports personal learning needs in HE, particularly in assisting with writing, summarizing texts, conducting market research, and crafting advertisements. These tasks, integral yet time-..."
+        }
+      ]
+    },
+    {
+      "topic_id": 3,
+      "name": "Topic 3: agents / llm / memory",
+      "short_label": "agents / llm / memory",
+      "chunk_count": 86,
+      "keywords": [
+        {
+          "term": "agents",
+          "c_tfidf": 0.0911
+        },
+        {
+          "term": "llm",
+          "c_tfidf": 0.0566
+        },
+        {
+          "term": "memory",
+          "c_tfidf": 0.0379
+        },
+        {
+          "term": "reasoning",
+          "c_tfidf": 0.0377
+        },
+        {
+          "term": "multi-agent",
+          "c_tfidf": 0.0341
+        },
+        {
+          "term": "skill",
+          "c_tfidf": 0.0295
+        },
+        {
+          "term": "planning",
+          "c_tfidf": 0.0295
+        },
+        {
+          "term": "systems",
+          "c_tfidf": 0.0289
+        },
+        {
+          "term": "models",
+          "c_tfidf": 0.0265
+        },
+        {
+          "term": "llms",
+          "c_tfidf": 0.0263
+        }
+      ],
+      "paper_coverage": 7,
+      "share_pct": 13.1,
+      "representative_chunks": [
+        {
+          "chunk_id": "2024_Chowa_From_language_to_action_a_review_o_chunk_6",
+          "paper": "2024_Chowa_From_language_to_action_a_review_o.md",
+          "section": "Page 4",
+          "excerpt": "S. S. Chowa et al. also offered an analysis of three agentic paradigms: tool use, retrieval-based planning, and feedback-driven learning. They categorized LLM agent roles, discussed the limitations of task-agnostic frameworks, and proposed directions for compo..."
+        },
+        {
+          "chunk_id": "2024_Chowa_From_language_to_action_a_review_o_chunk_47",
+          "paper": "2024_Chowa_From_language_to_action_a_review_o.md",
+          "section": "Page 43",
+          "excerpt": "From language to action: a review of large language models as… 10  Discussion Our review explored the rapid use of LLMs as agents and tools for complex autonomous tasks. This study presents a comprehensive examination of existing LLM-based frameworks and discu..."
+        },
+        {
+          "chunk_id": "2024_Chowa_From_language_to_action_a_review_o_chunk_9",
+          "paper": "2024_Chowa_From_language_to_action_a_review_o.md",
+          "section": "Page 7",
+          "excerpt": "From language to action: a review of large language models as… 3.1  Research questions (RQs) The main goal of this review is to synthesize the current state of LLM-based agents by examining their basic principles and real-world applications. To achieve this, t..."
+        }
+      ]
+    },
+    {
+      "topic_id": 4,
+      "name": "Topic 4: academic / human / llms",
+      "short_label": "academic / human / llms",
+      "chunk_count": 86,
+      "keywords": [
+        {
+          "term": "academic",
+          "c_tfidf": 0.0366
+        },
+        {
+          "term": "human",
+          "c_tfidf": 0.034
+        },
+        {
+          "term": "llms",
+          "c_tfidf": 0.0305
+        },
+        {
+          "term": "game",
+          "c_tfidf": 0.0264
+        },
+        {
+          "term": "like",
+          "c_tfidf": 0.0255
+        },
+        {
+          "term": "process",
+          "c_tfidf": 0.0252
+        },
+        {
+          "term": "chatgpt",
+          "c_tfidf": 0.0243
+        },
+        {
+          "term": "generative",
+          "c_tfidf": 0.0234
+        },
+        {
+          "term": "knowledge",
+          "c_tfidf": 0.0227
+        },
+        {
+          "term": "text",
+          "c_tfidf": 0.0225
+        }
+      ],
+      "paper_coverage": 9,
+      "share_pct": 13.1,
+      "representative_chunks": [
+        {
+          "chunk_id": "2024_Butson_AI_and_its_implications_for_researc_chunk_3",
+          "paper": "2024_Butson_AI_and_its_implications_for_researc.md",
+          "section": "Page 3",
+          "excerpt": "2012). Through this lens, we present the contrasting perspectives of the two authors: Russell, who extols the virtues of AI, and Rachel, who raises critical questions about its integration into academic research. The purpose is not to sow discord, but to illu-..."
+        },
+        {
+          "chunk_id": "2024_Butson_AI_and_its_implications_for_researc_chunk_12",
+          "paper": "2024_Butson_AI_and_its_implications_for_researc.md",
+          "section": "Page 12",
+          "excerpt": "be solely within the human domain. These advances could allow AI to provide deeper, more insightful analysis and feedback during the review process, further enhancing its utility as an assistant to human reviewers. But I agree, Rachel, it’s essential that AI i..."
+        },
+        {
+          "chunk_id": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi_chunk_61",
+          "paper": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi.md",
+          "section": "Page 51",
+          "excerpt": "case, the transparency and collegial trust that provides an epistemic foundation to scholarly inquiry (e.g., Bouchard, 2016) would be put into jeopardy. One reason that such risks could be overlooked by those promoting generative AI in research would be a pres..."
+        }
+      ]
+    },
+    {
+      "topic_id": 5,
+      "name": "Topic 5: topic / models / lda",
+      "short_label": "topic / models / lda",
+      "chunk_count": 82,
+      "keywords": [
+        {
+          "term": "topic",
+          "c_tfidf": 0.1277
+        },
+        {
+          "term": "models",
+          "c_tfidf": 0.0549
+        },
+        {
+          "term": "lda",
+          "c_tfidf": 0.0517
+        },
+        {
+          "term": "user",
+          "c_tfidf": 0.0415
+        },
+        {
+          "term": "documents",
+          "c_tfidf": 0.0378
+        },
+        {
+          "term": "modeling",
+          "c_tfidf": 0.0313
+        },
+        {
+          "term": "labels",
+          "c_tfidf": 0.0312
+        },
+        {
+          "term": "dataset",
+          "c_tfidf": 0.0301
+        },
+        {
+          "term": "document",
+          "c_tfidf": 0.0292
+        },
+        {
+          "term": "coherence",
+          "c_tfidf": 0.0274
+        }
+      ],
+      "paper_coverage": 8,
+      "share_pct": 12.4,
+      "representative_chunks": [
+        {
+          "chunk_id": "2024_Li_Improving_the_TENOR_of_Labeling_Re_chunk_10",
+          "paper": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+          "section": "Page 10",
+          "excerpt": "7 Limitations We provide a human-in-the-loop framework to eval- uate topic models, extending beyond automated evaluation metrics. Yet, our experiment only fo- cuses on a very narrow and specific task to evalu- ate topic models. In addition, although our work s..."
+        },
+        {
+          "chunk_id": "2025_Li_Large_Language_Models_Struggle_to_D_chunk_4",
+          "paper": "2025_Li_Large_Language_Models_Struggle_to_D.md",
+          "section": "Page 4",
+          "excerpt": "of questions related to their assigned dataset. Dur- ing the pretest, users rely on their own knowledge, allowing the identification of participants with sig- nificant prior knowledge of the questions, and their test-taking ability. In the posttest, users are ..."
+        },
+        {
+          "chunk_id": "2024_Li_Improving_the_TENOR_of_Labeling_Re_chunk_15",
+          "paper": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+          "section": "Page 15",
+          "excerpt": "of NTM can generate topic probability features that do better on classification. Such features, rooted in pre-trained embeddings, are perceived by compact machine learning models as more intuitive than the generative topic probabilities yielded by classical mo..."
+        }
+      ]
+    }
+  ],
+  "paper_profiles": [
+    {
+      "paper": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi.md",
+      "valid_chunks": 61,
+      "dominant_topic": 4,
+      "dominant_share": 95.1,
+      "secondary_topic": 1,
+      "secondary_share": 3.3,
+      "cross_paper_edges": 404,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_1": 2,
+        "Topic_3": 1,
+        "Topic_4": 58
+      }
+    },
+    {
+      "paper": "2024_Chowa_From_language_to_action_a_review_o.md",
+      "valid_chunks": 57,
+      "dominant_topic": 3,
+      "dominant_share": 98.2,
+      "secondary_topic": 0,
+      "secondary_share": 1.8,
+      "cross_paper_edges": 316,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 1,
+        "Topic_3": 56
+      }
+    },
+    {
+      "paper": "2024_Ofori-Boateng_Towards_the_automation_of_systemati.md",
+      "valid_chunks": 53,
+      "dominant_topic": 0,
+      "dominant_share": 100.0,
+      "secondary_topic": 0,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 306,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 53
+      }
+    },
+    {
+      "paper": "2023_Dwivedi_Opinion_Paper__“So_what_if_ChatGPT.md",
+      "valid_chunks": 52,
+      "dominant_topic": 1,
+      "dominant_share": 94.2,
+      "secondary_topic": 4,
+      "secondary_share": 3.8,
+      "cross_paper_edges": 302,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_1": 49,
+        "Topic_2": 1,
+        "Topic_4": 2
+      }
+    },
+    {
+      "paper": "2024_Bolaños_Artificial_intelligence_for_literat.md",
+      "valid_chunks": 47,
+      "dominant_topic": 0,
+      "dominant_share": 97.9,
+      "secondary_topic": 5,
+      "secondary_share": 2.1,
+      "cross_paper_edges": 296,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 46,
+        "Topic_5": 1
+      }
+    },
+    {
+      "paper": "2024_Akpan_Conversational_and_generative_artif.md",
+      "valid_chunks": 24,
+      "dominant_topic": 1,
+      "dominant_share": 95.8,
+      "secondary_topic": 2,
+      "secondary_share": 4.2,
+      "cross_paper_edges": 278,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_1": 23,
+        "Topic_2": 1
+      }
+    },
+    {
+      "paper": "2024_Sharma_Self‐regulation_and_shared_regulati.md",
+      "valid_chunks": 36,
+      "dominant_topic": 2,
+      "dominant_share": 66.7,
+      "secondary_topic": 0,
+      "secondary_share": 27.8,
+      "cross_paper_edges": 177,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 10,
+        "Topic_1": 1,
+        "Topic_2": 24,
+        "Topic_4": 1
+      }
+    },
+    {
+      "paper": "2023_Tlili_What_if_the_devil_is_my_guardian_an.md",
+      "valid_chunks": 24,
+      "dominant_topic": 1,
+      "dominant_share": 75.0,
+      "secondary_topic": 2,
+      "secondary_share": 12.5,
+      "cross_paper_edges": 166,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_1": 18,
+        "Topic_2": 3,
+        "Topic_4": 2,
+        "Topic_5": 1
+      }
+    },
+    {
+      "paper": "2024_Yan_Promises_and_challenges_of_generati.md",
+      "valid_chunks": 25,
+      "dominant_topic": 2,
+      "dominant_share": 92.0,
+      "secondary_topic": 4,
+      "secondary_share": 4.0,
+      "cross_paper_edges": 163,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 1,
+        "Topic_2": 23,
+        "Topic_4": 1
+      }
+    },
+    {
+      "paper": "2023_Wu_Do_AI_chatbots_improve_students_lea.md",
+      "valid_chunks": 21,
+      "dominant_topic": 1,
+      "dominant_share": 66.7,
+      "secondary_topic": 2,
+      "secondary_share": 23.8,
+      "cross_paper_edges": 147,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 2,
+        "Topic_1": 14,
+        "Topic_2": 5
+      }
+    },
+    {
+      "paper": "2024_Giannakos_The_promise_and_challenges_of_gener.md",
+      "valid_chunks": 20,
+      "dominant_topic": 2,
+      "dominant_share": 95.0,
+      "secondary_topic": 4,
+      "secondary_share": 5.0,
+      "cross_paper_edges": 147,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_2": 19,
+        "Topic_4": 1
+      }
+    },
+    {
+      "paper": "2024_Zhou_Unveiling_Students’_Experiences_and.md",
+      "valid_chunks": 23,
+      "dominant_topic": 2,
+      "dominant_share": 52.2,
+      "secondary_topic": 1,
+      "secondary_share": 39.1,
+      "cross_paper_edges": 144,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 2,
+        "Topic_1": 9,
+        "Topic_2": 12
+      }
+    },
+    {
+      "paper": "2025_Li_Large_Language_Models_Struggle_to_D.md",
+      "valid_chunks": 22,
+      "dominant_topic": 5,
+      "dominant_share": 77.3,
+      "secondary_topic": 0,
+      "secondary_share": 9.1,
+      "cross_paper_edges": 139,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 2,
+        "Topic_2": 2,
+        "Topic_4": 1,
+        "Topic_5": 17
+      }
+    },
+    {
+      "paper": "2024_Butson_AI_and_its_implications_for_researc.md",
+      "valid_chunks": 13,
+      "dominant_topic": 4,
+      "dominant_share": 100.0,
+      "secondary_topic": 4,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 138,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_4": 13
+      }
+    },
+    {
+      "paper": "2024_Luo_Large_Language_Model_Agent_A_Surve.md",
+      "valid_chunks": 17,
+      "dominant_topic": 3,
+      "dominant_share": 94.1,
+      "secondary_topic": 2,
+      "secondary_share": 5.9,
+      "cross_paper_edges": 137,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_2": 1,
+        "Topic_3": 16
+      }
+    },
+    {
+      "paper": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+      "valid_chunks": 20,
+      "dominant_topic": 5,
+      "dominant_share": 100.0,
+      "secondary_topic": 5,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 135,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_5": 20
+      }
+    },
+    {
+      "paper": "2023_Guo_Automated_Paper_Screening_for_Clini.md",
+      "valid_chunks": 14,
+      "dominant_topic": 0,
+      "dominant_share": 92.9,
+      "secondary_topic": 3,
+      "secondary_share": 7.1,
+      "cross_paper_edges": 134,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 13,
+        "Topic_3": 1
+      }
+    },
+    {
+      "paper": "2025_Scherbakov_The_emergence_of_large_language_mod.md",
+      "valid_chunks": 10,
+      "dominant_topic": 0,
+      "dominant_share": 100.0,
+      "secondary_topic": 0,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 128,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 10
+      }
+    },
+    {
+      "paper": "2024_Dennstädt_Title_and_abstract_screening_for_li.md",
+      "valid_chunks": 12,
+      "dominant_topic": 0,
+      "dominant_share": 100.0,
+      "secondary_topic": 0,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 119,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 12
+      }
+    },
+    {
+      "paper": "2024_de_Melo_Beyond_Topic_Modeling_Comparative.md",
+      "valid_chunks": 16,
+      "dominant_topic": 5,
+      "dominant_share": 100.0,
+      "secondary_topic": 5,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 117,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_5": 16
+      }
+    },
+    {
+      "paper": "2024_Atkinson_Cheap,_Quick,_and_Rigorous_Artific.md",
+      "valid_chunks": 14,
+      "dominant_topic": 0,
+      "dominant_share": 78.6,
+      "secondary_topic": 5,
+      "secondary_share": 21.4,
+      "cross_paper_edges": 107,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 11,
+        "Topic_5": 3
+      }
+    },
+    {
+      "paper": "2023_Hämäläinen_Evaluating_Large_Language_Models_in.md",
+      "valid_chunks": 26,
+      "dominant_topic": 5,
+      "dominant_share": 34.6,
+      "secondary_topic": 4,
+      "secondary_share": 26.9,
+      "cross_paper_edges": 104,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 4,
+        "Topic_1": 4,
+        "Topic_3": 2,
+        "Topic_4": 7,
+        "Topic_5": 9
+      }
+    },
+    {
+      "paper": "2024_Alfredo_Human-centred_learning_analytics_an.md",
+      "valid_chunks": 15,
+      "dominant_topic": 2,
+      "dominant_share": 100.0,
+      "secondary_topic": 2,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 89,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_2": 15
+      }
+    },
+    {
+      "paper": "2026_Xu_Agent_Skills_for_Large_Language_Mod.md",
+      "valid_chunks": 9,
+      "dominant_topic": 3,
+      "dominant_share": 100.0,
+      "secondary_topic": 3,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 82,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_3": 9
+      }
+    },
+    {
+      "paper": "2026_Kok-Shun_Agentopic_A_Generative_AI_Agent_Wo.md",
+      "valid_chunks": 16,
+      "dominant_topic": 5,
+      "dominant_share": 93.8,
+      "secondary_topic": 3,
+      "secondary_share": 6.2,
+      "cross_paper_edges": 77,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_3": 1,
+        "Topic_5": 15
+      }
+    },
+    {
+      "paper": "2024_Fabiano_How_to_optimize_the_systematic_revi.md",
+      "valid_chunks": 6,
+      "dominant_topic": 0,
+      "dominant_share": 100.0,
+      "secondary_topic": 0,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 60,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 6
+      }
+    },
+    {
+      "paper": "2023_Schmidt_A_narrative_review_of_recent_tools.md",
+      "valid_chunks": 5,
+      "dominant_topic": 0,
+      "dominant_share": 100.0,
+      "secondary_topic": 0,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 29,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 5
+      }
+    },
+    {
+      "paper": "2023_Qureshı_Are_ChatGPT_and_large_language_mode.md",
+      "valid_chunks": 1,
+      "dominant_topic": 0,
+      "dominant_share": 100.0,
+      "secondary_topic": 0,
+      "secondary_share": 0.0,
+      "cross_paper_edges": 13,
+      "has_reading_card": false,
+      "topic_distribution": {
+        "Topic_0": 1
+      }
+    }
+  ],
+  "top_intra_topic_bridges": [
+    {
+      "sim": 0.9055,
+      "topic_u": 5,
+      "topic_v": 5,
+      "chunk_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re_chunk_14",
+      "paper_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+      "section_a": "Page 14",
+      "excerpt_a": "top three most relevant labels of the document pre- dicted by the classifier. In all groups, users can click submit & next button to automatically go to the next document selected by active learning or they can go back t...",
+      "chunk_b": "2025_Li_Large_Language_Models_Struggle_to_D_chunk_16",
+      "paper_b": "2025_Li_Large_Language_Models_Struggle_to_D.md",
+      "section_b": "Page 16",
+      "excerpt_b": "Our document selection process follows two steps: first we identify the topic kH that shows the highest median document entropy among all K topics, indicating the topic where the classifier shows the most uncertainty. Th..."
+    },
+    {
+      "sim": 0.8928,
+      "topic_u": 5,
+      "topic_v": 5,
+      "chunk_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re_chunk_5",
+      "paper_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+      "section_a": "Page 5",
+      "excerpt_a": "more specific labels that are more closely related to the contents of individual documents. 3.3 Simulated Experiment Before conducting a real-world user study, we run simulated experiments on both datasets. We choose K =...",
+      "chunk_b": "2025_Li_Large_Language_Models_Struggle_to_D_chunk_16",
+      "paper_b": "2025_Li_Large_Language_Models_Struggle_to_D.md",
+      "section_b": "Page 16",
+      "excerpt_b": "Our document selection process follows two steps: first we identify the topic kH that shows the highest median document entropy among all K topics, indicating the topic where the classifier shows the most uncertainty. Th..."
+    },
+    {
+      "sim": 0.892,
+      "topic_u": 5,
+      "topic_v": 5,
+      "chunk_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re_chunk_15",
+      "paper_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+      "section_a": "Page 15",
+      "excerpt_a": "of NTM can generate topic probability features that do better on classification. Such features, rooted in pre-trained embeddings, are perceived by compact machine learning models as more intuitive than the generative top...",
+      "chunk_b": "2025_Li_Large_Language_Models_Struggle_to_D_chunk_16",
+      "paper_b": "2025_Li_Large_Language_Models_Struggle_to_D.md",
+      "section_b": "Page 16",
+      "excerpt_b": "Our document selection process follows two steps: first we identify the topic kH that shows the highest median document entropy among all K topics, indicating the topic where the classifier shows the most uncertainty. Th..."
+    },
+    {
+      "sim": 0.8914,
+      "topic_u": 5,
+      "topic_v": 5,
+      "chunk_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re_chunk_6",
+      "paper_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+      "section_a": "Page 6",
+      "excerpt_a": "NONE LDA sLDA ETM Bertopic Bills CTM 0.3 0.5 0.7 Purity 0.4 0.6 0.8 0.0 0.1 0.2 0.3 ARI 0.00 0.05 0.10 0.15 0.20 0.0 0.2 0.4 0 100 200 300 400 ANMI 0.0 0.1 0.2 0.3 0.4 0 100 200 300 400 Number Documents Labeled 20newsgro...",
+      "chunk_b": "2025_Li_Large_Language_Models_Struggle_to_D_chunk_15",
+      "paper_b": "2025_Li_Large_Language_Models_Struggle_to_D.md",
+      "section_b": "Page 15",
+      "excerpt_b": "0.2 0.3 0.4 0.5 0.6 0.7 Purity Bills lda ctm dvae bertopic 0.30 0.35 0.40 0.45 0.50 0.55 Sci-fi lda ctm dvae bertopic 0.1 0.2 0.3 0.4 0.5 0.6 Wiki lda ctm dvae bertopic 0.0 0.1 0.2 0.3 0.4 0.5 ARI lda ctm dvae bertopic 0..."
+    },
+    {
+      "sim": 0.8903,
+      "topic_u": 1,
+      "topic_v": 1,
+      "chunk_a": "2024_Akpan_Conversational_and_generative_artif_chunk_4",
+      "paper_a": "2024_Akpan_Conversational_and_generative_artif.md",
+      "section_a": "Page 4",
+      "excerpt_a": "1254 I. J. Akpan et al. / Intl. Trans. in Op. Res. 32 (2025) 1251–1281 Table 1 Literature survey and data collection process: Search and retrieval, ﬁltering, screening, and selection criteria of scientiﬁc literature on g...",
+      "chunk_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi_chunk_2",
+      "paper_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi.md",
+      "section_b": "Page 2",
+      "excerpt_b": "At the end of November 2022, the San Francisco–based firm OpenAI released an artificial intelligence chatbot called ChatGPT (Generative Pretrained Transformer). ChatGPT is a large language model that generates realistic ..."
+    },
+    {
+      "sim": 0.8888,
+      "topic_u": 0,
+      "topic_v": 0,
+      "chunk_a": "2024_Atkinson_Cheap,_Quick,_and_Rigorous_Artific_chunk_5",
+      "paper_a": "2024_Atkinson_Cheap,_Quick,_and_Rigorous_Artific.md",
+      "section_a": "Page 5",
+      "excerpt_a": "There are different methods that researchers may employ to accomplish each stage of an SLR. Recently, AI and MLTs have begun to be applied to stages of SLRs. Automating Stages of an SLR The use of AI in SLRs is not a new...",
+      "chunk_b": "2024_Bolaños_Artificial_intelligence_for_literat_chunk_4",
+      "paper_b": "2024_Bolaños_Artificial_intelligence_for_literat.md",
+      "section_b": "Page 3",
+      "excerpt_b": "Artificial intelligence for literature reviews: opportunities… 259 The remainder of this paper is structured as follows. Sect. 2 includes a description of the SLR stages and their relationship with AI. Section  3 outline..."
+    },
+    {
+      "sim": 0.8821,
+      "topic_u": 5,
+      "topic_v": 5,
+      "chunk_a": "2024_Atkinson_Cheap,_Quick,_and_Rigorous_Artific_chunk_7",
+      "paper_a": "2024_Atkinson_Cheap,_Quick,_and_Rigorous_Artific.md",
+      "section_a": "Page 7",
+      "excerpt_a": "(Ungless et al., 2023). The use of MLTs in NLP is useful for researchers as it allows for the automation of tasks, making them more cost and time efﬁcient (Le Glaz et al., 2021). Topic Modelling. A statistical form of NL...",
+      "chunk_b": "2024_de_Melo_Beyond_Topic_Modeling_Comparative_chunk_6",
+      "paper_b": "2024_de_Melo_Beyond_Topic_Modeling_Comparative.md",
+      "section_b": "Page 6",
+      "excerpt_b": "6 Tiago de Melo et al. An evaluator annotated each sentence according to the themes mentioned above until a set of 3,000 sentences for each of the seven themes was reached. A second evaluator reviewed the annotated sente..."
+    },
+    {
+      "sim": 0.88,
+      "topic_u": 5,
+      "topic_v": 5,
+      "chunk_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re_chunk_10",
+      "paper_a": "2024_Li_Improving_the_TENOR_of_Labeling_Re.md",
+      "section_a": "Page 10",
+      "excerpt_a": "7 Limitations We provide a human-in-the-loop framework to eval- uate topic models, extending beyond automated evaluation metrics. Yet, our experiment only fo- cuses on a very narrow and specific task to evalu- ate topic ...",
+      "chunk_b": "2025_Li_Large_Language_Models_Struggle_to_D_chunk_10",
+      "paper_b": "2025_Li_Large_Language_Models_Struggle_to_D.md",
+      "section_b": "Page 10",
+      "excerpt_b": "8 Limitations Data exploration is a complex task that relies heav- ily on human reasoning and analysis to produce meaningful insights. While manually sorting data is cumbersome and inefficient, tools like topic mod- els ..."
+    }
+  ],
+  "top_inter_topic_bridges": [
+    {
+      "sim": 0.8641,
+      "topic_u": 5,
+      "topic_v": 1,
+      "chunk_a": "2024_de_Melo_Beyond_Topic_Modeling_Comparative_chunk_4",
+      "paper_a": "2024_de_Melo_Beyond_Topic_Modeling_Comparative.md",
+      "section_a": "Page 4",
+      "excerpt_a": "4 Tiago de Melo et al. 2.2 Large Language Models Recent advancements in generative language models have opened new avenues for topic interpretation and analysis. Notably, models like ChatGPT 3.5 and ChatGPT 4, developed ...",
+      "chunk_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi_chunk_26",
+      "paper_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi.md",
+      "section_b": "Page 23",
+      "excerpt_b": "Talk of generative artificial intelligence (AI) and large language models (LLMs) such as ChatGPT has become ubiquitous. Building on the invention of the novel Transformer network architecture (Vaswani et al., 2017), LLMs..."
+    },
+    {
+      "sim": 0.8562,
+      "topic_u": 3,
+      "topic_v": 4,
+      "chunk_a": "2024_Chowa_From_language_to_action_a_review_o_chunk_35",
+      "paper_a": "2024_Chowa_From_language_to_action_a_review_o.md",
+      "section_a": "Page 31",
+      "excerpt_a": "From language to action: a review of large language models as… independence of LLM-based agents are highly dependent on three key areas of improve­ ment: prompting, fine-tuning, and memory enhancement. These methods help...",
+      "chunk_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi_chunk_29",
+      "paper_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi.md",
+      "section_b": "Page 26",
+      "excerpt_b": "through the process of targeted reinforcement learning from human feedback (RLHF) (Christiano et al., 2023; Ouyang et al., 2022). Behind the scenes, LLMs can be “tuned” in two important ways: the performance of the model..."
+    },
+    {
+      "sim": 0.8547,
+      "topic_u": 2,
+      "topic_v": 4,
+      "chunk_a": "2024_Giannakos_The_promise_and_challenges_of_gener_chunk_14",
+      "paper_a": "2024_Giannakos_The_promise_and_challenges_of_gener.md",
+      "section_a": "Page 14",
+      "excerpt_a": "has the potential to be as effective as traditionally pro­ duced expert content (Leiker et al. 2023b). Despite these promising findings, unless significant resources, time, effort, and data are used to patch them, the la...",
+      "chunk_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi_chunk_16",
+      "paper_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi.md",
+      "section_b": "Page 15",
+      "excerpt_b": "nature of LLMs. LLMs are found to be highly persuasive by generating text that sounds intelligent (Van Dis et al., 2023), which may lead people to blindly accept or incorporate AI outputs. As discussed, solely relying on..."
+    },
+    {
+      "sim": 0.8539,
+      "topic_u": 4,
+      "topic_v": 2,
+      "chunk_a": "2024_Butson_AI_and_its_implications_for_researc_chunk_3",
+      "paper_a": "2024_Butson_AI_and_its_implications_for_researc.md",
+      "section_a": "Page 3",
+      "excerpt_a": "2012). Through this lens, we present the contrasting perspectives of the two authors: Russell, who extols the virtues of AI, and Rachel, who raises critical questions about its integration into academic research. The pur...",
+      "chunk_b": "2024_Zhou_Unveiling_Students’_Experiences_and_chunk_22",
+      "paper_b": "2024_Zhou_Unveiling_Students’_Experiences_and.md",
+      "section_b": "Page 16",
+      "excerpt_b": "This research enriches the AIEd field by detailing students' application of AI in meeting their educational requirements within entrepreneurship studies. While existing research has pinpointed specific learning needs add..."
+    },
+    {
+      "sim": 0.8495,
+      "topic_u": 3,
+      "topic_v": 4,
+      "chunk_a": "2024_Chowa_From_language_to_action_a_review_o_chunk_40",
+      "paper_a": "2024_Chowa_From_language_to_action_a_review_o.md",
+      "section_a": "Page 36",
+      "excerpt_a": "S. S. Chowa et al. knowledge, mitigating hallucinations during inference. Conversely, episodic memory sys­ tems like Reflexion (Shinn et al., 2023) accumulate task-specific experience in the form of episodic verbal refle...",
+      "chunk_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi_chunk_29",
+      "paper_b": "2024_Kulkarni_The_Future_of_Research_in_an_Artifi.md",
+      "section_b": "Page 26",
+      "excerpt_b": "through the process of targeted reinforcement learning from human feedback (RLHF) (Christiano et al., 2023; Ouyang et al., 2022). Behind the scenes, LLMs can be “tuned” in two important ways: the performance of the model..."
+    },
+    {
+      "sim": 0.849,
+      "topic_u": 1,
+      "topic_v": 5,
+      "chunk_a": "2024_Akpan_Conversational_and_generative_artif_chunk_4",
+      "paper_a": "2024_Akpan_Conversational_and_generative_artif.md",
+      "section_a": "Page 4",
+      "excerpt_a": "1254 I. J. Akpan et al. / Intl. Trans. in Op. Res. 32 (2025) 1251–1281 Table 1 Literature survey and data collection process: Search and retrieval, ﬁltering, screening, and selection criteria of scientiﬁc literature on g...",
+      "chunk_b": "2024_de_Melo_Beyond_Topic_Modeling_Comparative_chunk_4",
+      "paper_b": "2024_de_Melo_Beyond_Topic_Modeling_Comparative.md",
+      "section_b": "Page 4",
+      "excerpt_b": "4 Tiago de Melo et al. 2.2 Large Language Models Recent advancements in generative language models have opened new avenues for topic interpretation and analysis. Notably, models like ChatGPT 3.5 and ChatGPT 4, developed ..."
+    },
+    {
+      "sim": 0.8485,
+      "topic_u": 1,
+      "topic_v": 2,
+      "chunk_a": "2023_Tlili_What_if_the_devil_is_my_guardian_an_chunk_26",
+      "paper_a": "2023_Tlili_What_if_the_devil_is_my_guardian_an.md",
+      "section_a": "Page 22",
+      "excerpt_a": "Tlili et al. Smart Learning Environments           (2023) 10:15 Conclusion and implications This study followed a three-stage instrumental case study, namely social network anal- ysis of tweets, content analysis of inter...",
+      "chunk_b": "2023_Wu_Do_AI_chatbots_improve_students_lea_chunk_18",
+      "paper_b": "2023_Wu_Do_AI_chatbots_improve_students_lea.md",
+      "section_b": "Page 18",
+      "excerpt_b": "|  27 DO AI CHATBOTS IMPROVE STUDENTS LEARNING OUTCOMES? levels and durations that may moderate the effects of AI chatbots on learning outcomes. The moderator analyses could provide valuable insight into how to effective..."
+    },
+    {
+      "sim": 0.8456,
+      "topic_u": 1,
+      "topic_v": 2,
+      "chunk_a": "2023_Dwivedi_Opinion_Paper__“So_what_if_ChatGPT_chunk_53",
+      "paper_a": "2023_Dwivedi_Opinion_Paper__“So_what_if_ChatGPT.md",
+      "section_a": "Page 53",
+      "excerpt_a": "International Journal of Information Management 71 (2023) 102642 53 In many cases, better results could be achieved with AI augmentation or augmented intelligence, which according to Gartner is “a human- centred partners...",
+      "chunk_b": "2024_Zhou_Unveiling_Students’_Experiences_and_chunk_6",
+      "paper_b": "2024_Zhou_Unveiling_Students’_Experiences_and.md",
+      "section_b": "Page 4",
+      "excerpt_b": "support. In sum, AI's integration into educational settings may support SDL by equipping students with the necessary tools and strategies for independent lifelong learning. Challenges of Adopting AI in Learning While AI ..."
+    }
+  ],
+  "topic_connectivity_and_holes": [
+    {
+      "topic_a": 2,
+      "topic_b": 5,
+      "cross_paper_bridge_edges": 2,
+      "centroid_cosine": 0.8436,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 2,
+      "topic_b": 3,
+      "cross_paper_bridge_edges": 7,
+      "centroid_cosine": 0.8712,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 0,
+      "topic_b": 2,
+      "cross_paper_bridge_edges": 10,
+      "centroid_cosine": 0.8741,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 1,
+      "topic_b": 5,
+      "cross_paper_bridge_edges": 12,
+      "centroid_cosine": 0.8636,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 4,
+      "topic_b": 5,
+      "cross_paper_bridge_edges": 13,
+      "centroid_cosine": 0.8663,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 0,
+      "topic_b": 3,
+      "cross_paper_bridge_edges": 17,
+      "centroid_cosine": 0.8598,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 1,
+      "topic_b": 3,
+      "cross_paper_bridge_edges": 22,
+      "centroid_cosine": 0.8486,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 3,
+      "topic_b": 5,
+      "cross_paper_bridge_edges": 22,
+      "centroid_cosine": 0.8691,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 0,
+      "topic_b": 1,
+      "cross_paper_bridge_edges": 23,
+      "centroid_cosine": 0.8782,
+      "is_structural_hole": true
+    },
+    {
+      "topic_a": 0,
+      "topic_b": 5,
+      "cross_paper_bridge_edges": 41,
+      "centroid_cosine": 0.9152,
+      "is_structural_hole": false
+    },
+    {
+      "topic_a": 0,
+      "topic_b": 4,
+      "cross_paper_bridge_edges": 42,
+      "centroid_cosine": 0.8927,
+      "is_structural_hole": false
+    },
+    {
+      "topic_a": 3,
+      "topic_b": 4,
+      "cross_paper_bridge_edges": 50,
+      "centroid_cosine": 0.8796,
+      "is_structural_hole": false
+    },
+    {
+      "topic_a": 2,
+      "topic_b": 4,
+      "cross_paper_bridge_edges": 55,
+      "centroid_cosine": 0.923,
+      "is_structural_hole": false
+    },
+    {
+      "topic_a": 1,
+      "topic_b": 4,
+      "cross_paper_bridge_edges": 88,
+      "centroid_cosine": 0.9282,
+      "is_structural_hole": false
+    },
+    {
+      "topic_a": 1,
+      "topic_b": 2,
+      "cross_paper_bridge_edges": 119,
+      "centroid_cosine": 0.9353,
+      "is_structural_hole": false
+    }
+  ]
+}

@@ -323,7 +323,7 @@ def normalize_literal_dollars(text: str) -> str:
     r"""
     轉譯純文字中的金額美金符號 $50 -> \$50，防範同一段落多個 $ 被 VS Code 誤判為 KaTeX 數學區塊。
     """
-    text = re.sub(r'(?<!\\)\$(\d+(?:,\d+)*(?:\.\d+)?)\s*(元|位|人|秒|分|倍|%|萬)?', r'\\$\1 \2', text)
+    text = re.sub(r'(?<!\\)\$(\d+(?:,\d+)*(?:\.\d+)?)(?!\$)\s*(元|位|人|秒|分|倍|%|萬)', r'\\$\1 \2', text)
     text = re.sub(r'\\\$(\d+(?:,\d+)*(?:\.\d+)?)\s+', r'\\$\1 ', text)
     return text
 
