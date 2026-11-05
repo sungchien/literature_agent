@@ -1,12 +1,14 @@
-{
+﻿{
   "mcpServers": {
     "literature-workflow": {
-      "command": "python",
+      "command": "C:\\Users\\Leo\\.venvs\\thesis_env\\Scripts\\python.exe",
       "args": [
+        "-B",
         "scripts/literature_workflow_mcp.py"
       ],
       "env": {
-        "PYTHONIOENCODING": "utf-8"
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONDONTWRITEBYTECODE": "1"
       }
     }
   }

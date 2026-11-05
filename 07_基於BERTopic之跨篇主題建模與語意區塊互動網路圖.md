@@ -84,19 +84,20 @@ literature_agent/                         # 專案根目錄
 | **`umap-learn`** | **核心套件** | `== 0.5.5` (Py3.8) 或 `>= 0.5.7` (Py3.10+) | 提供非線性流形學習降維（`umap.UMAP`），克服高維度嵌入向量的空間詛咒。 |
 | **`scikit-learn`** | **核心必備** | `>= 1.3.0` | 提供原生 `sklearn.cluster.HDBSCAN` 密度聚類、`CountVectorizer` 雙連詞特徵提取與 `TruncatedSVD` 備援降維。 |
 | **`numpy`** | **核心必備** | `>= 1.24.0` | 載入 `vector_embeddings.npz` 向量矩陣、計算主題重心（Centroids）與兩兩餘弦相似度矩陣內積（$\mathbf{S} = \mathbf{E}\mathbf{E}^T$）。 |
+| **`tqdm`** | **核心套件** | `>= 4.65.0` | 於終端機即時渲染「學術雜訊清洗」、「BERTopic 五階段主題建模」與「跨篇相似度網路建構」之三階段進度條。 |
 
 如上表所示，`bertopic` 套件在安裝時會自動拉取 `umap-learn` 作為流形降維依賴。請特別注意你目前的 Python 版本環境，在終端機（Terminal）擇一執行對應的安裝指令：
 
 ```powershell
 # 【情況 A：Python 3.10 ~ 3.13 環境（支援 scikit-learn >= 1.6）】
-pip install -U numpy scikit-learn umap-learn bertopic
+pip install -U numpy scikit-learn umap-learn bertopic tqdm
 
 # 【情況 B：Python 3.8 環境（PyPI 最高僅支援至 scikit-learn 1.3.2）】
 # 必須先鎖定 umap-learn==0.5.5，避免 pip 自動抓取要求 scikit-learn>=1.6 的新版 umap-learn
-pip install "scikit-learn==1.3.2" "umap-learn==0.5.5" bertopic
+pip install "scikit-learn==1.3.2" "umap-learn==0.5.5" bertopic tqdm
 
-# 【環境檢核】確認 bertopic、umap、scikit-learn 與 numpy 皆可正常匯入
-python -c "import numpy as np, sklearn, umap, bertopic; print('環境檢核通過！BERTopic:', bertopic.__version__, '| sklearn:', sklearn.__version__)"
+# 【環境檢核】確認 bertopic、umap、scikit-learn、numpy 與 tqdm 皆可正常匯入
+python -c "import numpy as np, sklearn, umap, bertopic, tqdm; print('環境檢核通過！BERTopic:', bertopic.__version__, '| sklearn:', sklearn.__version__)"
 
 ```
 
@@ -136,24 +137,7 @@ python -c "import numpy as np, sklearn, umap, bertopic; print('環境檢核通�
 
 為了讓非資工背景的研究生也能徹底掌握這套方法的學理合法性，並能自信地寫入碩士論文第三章「研究方法」中，下圖呈現了本週 `build_topic_network.py` 所執行的 **區塊級 BERTopic 五階段計算管線與雜訊防禦機制**：
 
-```mermaid
-flowchart LR
-    subgraph S0["前置防禦：學術雜訊清洗"]
-        A["第五週向量庫<br/>N_raw 個原始語意區塊<br/>(N_raw × D 嵌入矩陣)"] --> B["首頁機構地址與<br/>文末書目區塊過濾<br/>(剔除非實質論述雜訊塊)"]
-    end
-
-    subgraph S1["階段一至三：流形降維與密度聚類"]
-        B --> C["N 個有效論述區塊<br/>L2 正規化稠密向量"]
-        C --> D["Stage 2: 流形降維<br/>(UMAP / TruncatedSVD)<br/>克服高維度空間詛咒"]
-        D --> E["Stage 3: HDBSCAN 密度聚類<br/>+ 原始向量空間中心離群收斂<br/>(自動識別核心主題簇)"]
-    end
-
-    subgraph S2["階段四至五：類別表徵提取"]
-        E --> F["Stage 4: 類別文檔合併<br/>Bigram CountVectorizer<br/>(1~2 連詞 + 學術停用詞過濾)"]
-        F --> G["Stage 5: c-TF-IDF 權重計算<br/>W_{t,c} = tf_{t,c} · log(1 + A / tf_t)<br/>提煉各主題專屬概念詞"]
-    end
-
-```
+![區塊級 BERTopic 五階段計算管線與學術雜訊防禦機制](figures/07_bertopic_pipeline.png "區塊級 BERTopic 五階段計算管線與雜訊防禦機制")
 
 如上方流程圖所示，整個計算管線由一個關鍵的「前置學術雜訊防禦層」與 BERTopic 的「五大核心演算法階段（Grootendorst, 2022）」緊密串聯而成：
 
@@ -230,31 +214,7 @@ $$\mathbf{S} = \mathbf{E}\mathbf{E}^T, \quad S_{i,j} = \cos(\theta_{i,j}) = \mat
 
 當我們將全庫有效區塊節點與跨篇語意橋樑投影到二維力導向圖（Force-Directed Graph）上時，研究者不應只是「看熱鬧」欣賞漂亮的彩色圓點，而是要運用圖論（Graph Theory）與知識域視覺化理論（Chen, 2006; Burt, 1992），從網路中精準捕獵三種決定文獻探討成敗的關鍵結構。下圖展示了區塊相似度網路中的三大核心拓撲結構及其學術意涵：
 
-```mermaid
-flowchart TD
-    subgraph TA["主題簇 A：應用場域與學習心理聚落"]
-        HA(("共鳴樞紐區塊 Hub<br/>跨篇連線度極高之核心定義段落"))
-        NA1("文獻甲#段落") --- HA
-        NA2("文獻乙#段落") --- HA
-        NA3("文獻丙#段落") --- HA
-    end
-
-    subgraph TB["主題簇 B：研究方法與主題建模聚落"]
-        HB(("主題內高相似跨篇對<br/>不同作者針對同一問題之正面交鋒"))
-        NB1("文獻丁#段落") --- HB
-        NB2("文獻戊#段落") --- HB
-    end
-
-    subgraph TC["主題簇 C：系統架構與自主代理人聚落"]
-        HC(("核心架構段落<br/>Agent 規劃與記憶機制"))
-        NC1("文獻己#段落") --- HC
-        NC2("文獻庚#段落") --- HC
-    end
-
-    NB1 -. "跨主題語意橋樑 (Inter-Topic Bridge)<br/>連接不同主題簇之跨領域思想火花" .-> HA
-    TB x-- "結構洞 (Structural Hole, Burt 1992)<br/>兩大聚落內部密集、彼此跨篇橋樑極度稀疏<br/>【鎖定跨領域結合之黃金研究空白】" --x TC
-
-```
+![跨篇語意區塊相似度網路之三大圖論拓撲結構與結構洞示意圖](figures/07_chunk_network_topology.png "跨篇語意區塊網路之三大圖論拓撲結構與結構洞示意圖")
 
 結合上方拓撲示意圖與社會網路分析學理，我們可以在網路圖中執行三種不同層次的「學術淘金」：
 
@@ -335,13 +295,16 @@ python skills/topic_network_explorer/scripts/build_topic_network.py validate 02_
 [資訊] 全庫語意區塊 BERTopic 主題建模與跨篇相似度網路建置工具
 ==================================================================
 [載入] 原始論文區塊總數 : <N_raw> 個 | 向量維度 : (<N_raw>, <D>)
+[進度 1/3] 學術雜訊清洗      : 100%|██████████████████████████| <N_raw>/<N_raw> [00:00<00:00, ...塊/s]
 [過濾] 已排除首頁作者機構地址與短碎屑區塊 : <N_noise> 個
 [建模] 納入有效學術語意區塊 : <N_valid> 個 (涵蓋 <M> 篇論文)
+[進度 2/3] BERTopic 五階段建模: 100%|██████████████████████████| 5/5 [00:03<00:00, ...階段/s, 完成]
 [成功] 完成 BERTopic 主題聚類與 c-TF-IDF 表徵提取！共識別出 <K> 個主題簇：
-   - Topic 0 (<Count_0> 塊): [keyword_1, keyword_2, keyword_3, ...]
-   - Topic 1 (<Count_1> 塊): [keyword_1, keyword_2, keyword_3, ...]
-   - Topic 2 (<Count_2> 塊): [keyword_1, keyword_2, keyword_3, ...]
+   * Topic 0 (<Count_0> 塊): [keyword_1, keyword_2, keyword_3, ...]
+   * Topic 1 (<Count_1> 塊): [keyword_1, keyword_2, keyword_3, ...]
+   * Topic 2 (<Count_2> 塊): [keyword_1, keyword_2, keyword_3, ...]
    ...
+[進度 3/3] 跨篇相似度網路建構: 100%|██████████████████████████| <N_valid>/<N_valid> [00:00<00:00, ...節點/s]
 ------------------------------------------------------------------
 [網路] 已建立區塊相似度網路 : 共 <E_total> 條邊 (跨篇語意橋樑 <E_cross> 條)
 [輸出] 結構化統計數據檔     : 01_papers\topic_network_stats.json
