@@ -401,3 +401,15 @@ Chunk #13:
 然而，檢索出零碎的精華段落，只是研究拼圖的第一步。一篇優秀的碩士論文或期刊論文，要求研究者必須對關鍵經典文獻進行**「解剖級的深度精讀」**。
 
 在下一週（第六講）的課程中，我們將跨入 **《單篇批判精讀與標準閱讀卡片化：學術知識的晶體化》**。我們將學習卡片盒筆記法（Zettelkasten）在學術文獻中的進階應用，定義涵蓋「研究問題、理論框架、實證設計、關鍵發現、方法盲點、對本研究啟發與黃金引句」的七維標準學術卡片（Schema），並訓練 Agent 化身為最挑剔的學術審稿人，將厚重的單篇論文淬鍊為永不遺忘的知識晶體！
+
+---
+
+## 附錄：本章學理基礎與參考文獻（APA 第七版格式）
+
+本章所建立之「檢索增強生成（RAG）」、「學術篇章結構感知分塊」、「長程脈絡遺忘（Lost in the Middle）」以及「稠密向量語意檢索」方法論，其學理基礎依 APA 第七版格式臚列如下：
+
+- **Lewis, P., Perez, E., Piktus, A., Petroni, F., Karpukhin, V., Goyal, N., Küttler, H., Lewis, M., Yih, W.-t., Rocktäschel, T., Riedel, S., & Kiela, D. (2020).** Retrieval-augmented generation for knowledge-intensive NLP tasks. In *Advances in Neural Information Processing Systems (NeurIPS 2020)* (Vol. 33, pp. 9459–9474).
+- **Liu, N. F., Lin, K., Hewitt, J., Paranjape, A., Bevilacqua, M., Petroni, F., & Liang, P. (2024).** Lost in the middle: How language models use long contexts. *Transactions of the Association for Computational Linguistics*, *12*, 157–173. https://doi.org/10.1162/tacl_a_00638
+- **Robertson, S., & Zaragoza, H. (2009).** The probabilistic relevance framework: BM25 and beyond. *Foundations and Trends in Information Retrieval*, *3*(4), 333–389. https://doi.org/10.1561/1500000019
+- **Xiao, S., Liu, Z., Zhang, P., & Muennighoff, N. (2023).** C-Pack: Packaged resources to advance general Chinese and English embedding (*BAAI/bge-base-en-v1.5*). *arXiv preprint arXiv:2309.07597*. https://doi.org/10.48550/arXiv.2309.07597
+

@@ -209,3 +209,32 @@ flowchart LR
 3. **本機 RAG 事實錨定防禦力**：Agent 針對實證研究問題之回答，100% 錨定於檢索回傳之區塊段落，杜絕文獻幻覺與事實雜交。
 4. **文獻探討概念綜整度**：完成雙層次比較矩陣（`literature_matrix.md`），不落入「作者流水帳」，並清晰歸納出三大概念的共識、爭端與情境微差。
 5. **開題立論合法性**：完成符合 Swales CARS 模型之學術空白陳述，成功通過 Agent 模擬口試委員三路壓力測試，並將規格正式收斂回寫至 `PROJECT.md`。
+
+---
+
+## 六、全課程核心學術文獻與延伸閱讀（APA 第七版格式）
+
+本課程橫跨「圖書資訊學、資訊組織、檢索增強生成（RAG）、神經主題建模與自主代理人（AI Agent）」五大學理領域。為提供修課學生與研究者扎實的學術依據，全課程核心文獻依 APA 第七版規範分類整理如下，便於論文撰寫與方法論章節引用：
+
+### 1. AI Agent 系統性文獻回顧（SLR）與範圍審查（Scoping Review）
+- **Li, S., Zhang, Y., Wang, H., & Liu, X. (2025).** A scoping review of large language model-based pedagogical agents. *arXiv*. https://doi.org/10.48550/arXiv.2604.12253
+- **Sami, A. M., Rasheed, Z., Kemell, K.-K., Waseem, M., Kilamo, T., Saari, M., Duc, A. N., Systä, K., & Abrahamsson, P. (2024).** System for systematic literature review using multiple AI agents: Concept and an empirical evaluation. *arXiv*. https://doi.org/10.48550/arXiv.2403.08399
+- **Wang, L., Ma, C., Feng, X., Zhang, Z., Yang, H., Zhang, J., Chen, Z., Tang, J., Chen, X., Lin, Y., Zhao, W. X., Wei, Z., & Wen, J.-R. (2024).** A survey on large language model based autonomous agents. *Frontiers of Computer Science*, *18*(6), Article 186345. https://doi.org/10.1007/s11704-024-40231-1
+- **Hou, X., Zhao, Y., Liu, Y., Yang, Z., Wang, K., Li, L., Luo, X., Lo, D., Grundy, J., & Wang, H. (2024).** Large language model-based agents for software engineering: A survey. *ACM Computing Surveys*, *56*(12), 1–38. https://doi.org/10.1145/3674153
+- **Zheng, T., Zhang, L., Shen, Y., & Chen, M. (2025).** From automation to autonomy: A survey on large language model-based agents in scientific discovery. In *Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing (EMNLP 2025)* (pp. 895–918). Association for Computational Linguistics. https://doi.org/10.18653/v1/2025.emnlp-main.895
+
+### 2. 圖資學理、資訊組織與批判文獻探討方法論經典
+- **Page, M. J., McKenzie, J. E., Bossuyt, P. M., Boutron, I., Hoffmann, T. C., Mulrow, C. D., Shamseer, L., Tetzlaff, J. M., Akl, E. A., Brennan, S. E., Chou, R., Glanville, J., Grimshaw, J. M., Hróbjartsson, A., Lalu, M. M., Li, T., Loder, E. W., Mayo-Wilson, E., McDonald, S., ... & Moher, D. (2021).** The PRISMA 2020 statement: An updated guideline for reporting systematic reviews. *BMJ*, *372*, Article n71. https://doi.org/10.1136/bmj.n71
+- **Sandberg, J., & Alvesson, M. (2011).** Ways of constructing research questions: Gap-spotting or problematization? *Organization*, *18*(1), 23–44. https://doi.org/10.1177/1350508410372151
+- **Swales, J. M. (1990).** *Genre analysis: English in academic and research settings*. Cambridge University Press.
+- **Swales, J. M. (2004).** *Research genres: Explorations and applications*. Cambridge University Press.
+- **Webster, J., & Watson, R. T. (2002).** Analyzing the past to prepare for the future: Writing a literature review. *MIS Quarterly*, *26*(2), xiii–xxiii.
+- **Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2023).** ReAct: Synergizing reasoning and acting in language models. In *International Conference on Learning Representations (ICLR 2023)*. https://doi.org/10.48550/arXiv.2210.03629
+
+### 3. 前沿 AI Agent 科學發現與學術寫作實踐典範
+- **Baek, J., Jauhar, S. K., Sil, A., & Hwang, S. J. (2025).** ResearchAgent: Iterative research idea generation over scientific literature with large language models. In *Proceedings of the 2025 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies (NAACL 2025)* (pp. 342–361). Association for Computational Linguistics. https://doi.org/10.18653/v1/2025.naacl-long.342
+- **Ghafarollahi, A., & Buehler, M. J. (2024).** SciAgents: Automating scientific discovery through bioinspired multi-agent intelligent graph reasoning. *Advanced Materials*, *36*(50), Article 2413523. https://doi.org/10.1002/adma.202413523
+- **Kasneci, E., Sessler, K., Küchemann, S., Bannert, M., Dementieva, D., Fischer, F., Gasser, U., Groh, G., Günnemann, S., Hüllermeier, E., Krusche, S., Kutyniok, G., Michaeli, T., Nerdel, C., Pfeffer, J., Poquet, O., Sailer, M., Schmidt, A., Seidel, T., ... & Kasneci, G. (2023).** ChatGPT for good? On opportunities and challenges of large language models for education. *Learning and Individual Differences*, *103*, Article 102274. https://doi.org/10.1016/j.lindif.2023.102274
+- **Lu, C., Lu, C., Lange, R. T., Foerster, J., Clune, J., & Ha, D. (2026).** Towards end-to-end automation of AI research. *Nature*, *638*(8045), 321–330. https://doi.org/10.1038/s41586-026-10265-5
+- **Schmidgall, S., Su, Y., Wang, Z., Patel, X., & Ziaei, R. (2025).** Agent Laboratory: Using LLM agents as research assistants. *arXiv*. https://doi.org/10.48550/arXiv.2501.04227
+
