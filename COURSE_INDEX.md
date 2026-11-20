@@ -2,13 +2,13 @@
 
 本課程專為碩士研究生與學術研究者設計，以 **Antigravity 2.0 Desktop** 為實踐中樞，引導研究者跨越傳統「被動對話式 Chatbot」之限制，邁向具備「環境感知、任務規劃、工具調用與批判反思」的 **自主研究代理人（AI Agent）** 協同範式。
 
-透過本索引，您可快速瀏覽全套 10 份核心講義之精華、專案所有 Markdown 資產連結、系統化建議閱讀路徑，以及整合學理與工程實踐之全域知識地圖。
+透過本索引，您可快速瀏覽全套 11 份核心講義之精華、專案所有 Markdown 資產連結、系統化建議閱讀路徑，以及整合學理與工程實踐之全域知識地圖。
 
 ---
 
 ## 一、核心講義清單與內容摘要
 
-以下為本課程第零章至第九章之 10 份核心講義清單，每份講義皆提供約 50 字之核心摘要、相應工程工具與核心交付物：
+以下為本課程第零章至第十章之 11 份核心講義清單，每份講義皆提供約 50 字之核心摘要、相應工程工具與核心交付物：
 
 | 章節 | 講義檔案連結 | 核心內容摘要（約 50 字） | 關鍵工具與技術 | 核心產出資產 |
 | :--- | :--- | :--- | :--- | :--- |
@@ -22,6 +22,7 @@
 | **第七章** | [07_基於BERTopic之跨篇主題建模與語意區塊互動網路圖.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/07_基於BERTopic之跨篇主題建模與語意區塊互動網路圖.md) | 複用本機 768 維嵌入向量，結合 BERTopic 與 c-TF-IDF 演算法自動提取跨篇主題聚落，計算語意相似度建構互動式網路圖，突破 RAG 檢索隧道效應並診斷文獻結構洞。 | BERTopic, UMAP, HDBSCAN, HTML5 Canvas Network | `02_notes/topic_chunk_network.html`, `02_notes/topic_landscape.md` |
 | **第八章** | [08_跨篇文獻矩陣共構與概念導向綜整.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/08_跨篇文獻矩陣共構與概念導向綜整.md) | 翻轉作者流水帳為概念中心矩陣，整合單篇卡片與主題網路，透過雙層次比較矩陣橫向對齊異質文類，提煉跨篇文獻之學術共識、實證爭端與情境微差，奠定立論實證基石。 | Webster & Watson 概念矩陣, Garrard 矩陣法 | `skills/literature_matrix_synthesizer/`, `02_notes/literature_matrix.md` |
 | **第九章** | [09_學術空白鎖定與開題立論防禦.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/09_學術空白鎖定與開題立論防禦.md) | 破除「過去沒人做」之偽空白迷思，運用問題化理論診斷四大真學術空白，導入 Swales CARS 模型四步公式立論，透過 Agent 口試委員三路壓力測試，閉環升級定錨版規格書。 | Sandberg & Alvesson 問題化, Swales CARS 模型 | `skills/research_gap_challenger/`, `research_gap_statement.md` |
+| **第十章** | [10_Multi-Agent多代理協作與學術團隊設計.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/10_Multi-Agent多代理協作與學術團隊設計.md) | 剖析單代理上下文稀釋與自寫自審偏誤，掌握四大協作拓撲並導讀 SciAgents、Agent Laboratory、Co-Scientist 與 PaperOrchestra，設計 PI 主導四代理團隊藍圖與交接契約。 | Multi-Agent Topologies, Context Isolation, HITL Gates | `skills/research_team_orchestrator/`, `02_notes/research_team_blueprint.md` |
 
 ---
 
@@ -40,6 +41,7 @@
 - [07_基於BERTopic之跨篇主題建模與語意區塊互動網路圖.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/07_基於BERTopic之跨篇主題建模與語意區塊互動網路圖.md)：向量重用、c-TF-IDF 主題建模與互動式語意區塊網路圖拓撲分析。
 - [08_跨篇文獻矩陣共構與概念導向綜整.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/08_跨篇文獻矩陣共構與概念導向綜整.md)：Webster & Watson 概念中心矩陣、異質文類橫向對齊與三態綜整。
 - [09_學術空白鎖定與開題立論防禦.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/09_學術空白鎖定與開題立論防禦.md)：真偽學術空白鑑別、CARS 四步修辭公式與口試極限對抗壓力測試。
+- [10_Multi-Agent多代理協作與學術團隊設計.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/10_Multi-Agent多代理協作與學術團隊設計.md)：單代理極限診斷、四大協作拓撲、科研系統典範導讀與 PI 主導四代理團隊藍圖設計。
 
 ### 2. 研究規格書與歷史演進 (Project Specs & History)
 - [PROJECT.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/PROJECT.md)：現行專案主規格書（當前為 v0.3 本機 RAG 向量檢索與雙語鷹架治理版）。
@@ -79,6 +81,11 @@
   - [sample_gap_statement.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/skills/research_gap_challenger/examples/sample_gap_statement.md)：完整學術空白陳述與口試答辯示範。
   - [defense_rubric.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/skills/research_gap_challenger/resources/defense_rubric.md)：真偽空白分類學與口試壓力測試規準。
   - [gap_statement_template.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/skills/research_gap_challenger/resources/gap_statement_template.md)：CARS 空白陳述與答辯實錄範本。
+- **多代理學術團隊協調 (`research_team_orchestrator`)**
+  - [SKILL.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/skills/research_team_orchestrator/SKILL.md)：多代理團隊藍圖設計、權限邊界設定與雙代理試跑 SOP。
+  - [sample_team_blueprint.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/skills/research_team_orchestrator/examples/sample_team_blueprint.md)：PI 主導之四代理學術寫作與稽核團隊示範藍圖。
+  - [orchestration_criteria.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/skills/research_team_orchestrator/resources/orchestration_criteria.md)：四大協作拓撲選型、角色隔離鐵律與工作流光譜規準。
+  - [team_blueprint_template.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/skills/research_team_orchestrator/resources/team_blueprint_template.md)：研究團隊設計藍圖與交接契約空白範本。
 - **學術章節起草專家 (`chapter_writer` & `introduction_writer`)**
   - [introduction_writer/SKILL.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/skills/introduction_writer/SKILL.md)：緒論第一章撰寫專家規範。
   - [chapter_writer/SKILL.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/skills/chapter_writer/SKILL.md)：論文專章深度寫作規格。
@@ -87,7 +94,7 @@
 
 ## 三、建議學習閱讀順序
 
-本課程各章節並非獨立的技術教學，而是具備高度「前後相依與資料管線推進」的嚴謹學術工程體系。強烈建議學習者依照以下六大階段循序研讀與操作：
+本課程各章節並非獨立的技術教學，而是具備高度「前後相依與資料管線推進」的嚴謹學術工程體系。強烈建議學習者依照以下七大階段循序研讀與操作：
 
 ![建議學習閱讀順序路線圖](figures/course_learning_roadmap.png)
 
@@ -98,6 +105,7 @@ flowchart LR
     S2 --> S3["階段三：微觀批判卡片化<br/>(Ch 06)"]
     S3 --> S4["階段四：宏觀拓撲與概念矩陣<br/>(Ch 07 ~ 08)"]
     S4 --> S5["階段五：空白鎖定與立論閉環<br/>(Ch 09)"]
+    S5 --> S6["階段六：多代理團隊與協作<br/>(Ch 10)"]
 ```
 
 ### 階段詳細導讀與相依性邏輯：
@@ -131,6 +139,11 @@ flowchart LR
    - **必讀講義**：[09_學術空白鎖定與開題立論防禦.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/09_學術空白鎖定與開題立論防禦.md)
    - **學習目的**：運用問題化理論識別四大真學術空白，使用 Swales CARS 模型四步公式起草中英雙語 Gap Statement，正面迎戰 Agent 口試委員發動的三路極限壓力測試，將收斂定稿之研究問題回寫升級為 `PROJECT.md (v0.4)`。
    - **完成里程碑**：碩士學位論文計畫書第一章（緒論）與第二章（文獻探討）完成實證錨定，正式達成開題準備閉環。
+
+7. **階段六：團隊協作：Multi-Agent 學術研究團隊設計與交接治理（研讀第十章）**
+   - **必讀講義**：[10_Multi-Agent多代理協作與學術團隊設計.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/10_Multi-Agent多代理協作與學術團隊設計.md)
+   - **學習目的**：剖析單代理上下文稀釋與同源確認偏誤，掌握四大協作拓撲並導讀前沿科研多代理系統，部署 `research_team_orchestrator` 設計 PI 主導的四代理團隊藍圖（`research_team_blueprint.md`）、工件交接契約與雙重 HITL 審查閘門。
+   - **產出資產**：通過 `team_blueprint_tool.py validate` 檢驗之個人研究團隊藍圖，並於 Antigravity 2.0 完成「檢索員 $\rightarrow$ 隔離稽核員」雙代理試跑演練，銜接後續多代理對抗審查與 `03_drafts/` 草稿合成。
 
 ---
 
@@ -180,6 +193,11 @@ flowchart LR
         C08 --> C09
     end
 
+    subgraph S6["【階段六】多代理協作與學術團隊設計"]
+        direction TB
+        C10["<b>第十章：Multi-Agent 團隊設計</b><br/>• 單代理三重天花板診斷<br/>• 四大協作拓撲與科研系統導讀<br/>• PI 主導四代理與上下文隔離<br/>• 工件交接契約與雙重 HITL 閘門<br/>• 產出 research_team_blueprint.md"]
+    end
+
     FinalGoal["<b>碩士學位論文計畫書定稿</b><br/>（Chapter 1 緒論 + Chapter 2 文獻探討）"]
 
     S0 --> S1
@@ -188,7 +206,8 @@ flowchart LR
     S2 -->|"向量重用"| S4
     S3 -->|"閱讀卡片"| C08
     S4 -->|"主題拓撲"| C08
-    C09 ==>|"立論閉環"| FinalGoal
+    C09 -->|"立論閉環"| C10
+    C10 ==>|"團隊寫作與稽核"| FinalGoal
 
     style S0 fill:#f1f5f9,stroke:#3b82f6,stroke-width:2px,rx:8px,ry:8px
     style S1 fill:#ecfdf5,stroke:#10b981,stroke-width:2px,rx:8px,ry:8px
@@ -196,6 +215,7 @@ flowchart LR
     style S3 fill:#fdf2f8,stroke:#ec4899,stroke-width:2px,rx:8px,ry:8px
     style S4 fill:#f5f3ff,stroke:#8b5cf6,stroke-width:2px,rx:8px,ry:8px
     style S5 fill:#fff1f2,stroke:#ef4444,stroke-width:2px,rx:8px,ry:8px
+    style S6 fill:#ecfeff,stroke:#0891b2,stroke-width:2px,rx:8px,ry:8px
     style FinalGoal fill:#1e293b,stroke:#0f172a,stroke-width:2.5px,color:#ffffff,rx:8px,ry:8px
 ```
 
@@ -209,3 +229,4 @@ flowchart LR
 3. **本機 RAG 事實錨定防禦力**：Agent 針對實證研究問題之回答，100% 錨定於檢索回傳之區塊段落，杜絕文獻幻覺與事實雜交。
 4. **文獻探討概念綜整度**：完成雙層次比較矩陣（`literature_matrix.md`），不落入「作者流水帳」，並清晰歸納出三大概念的共識、爭端與情境微差。
 5. **開題立論合法性**：完成符合 Swales CARS 模型之學術空白陳述，成功通過 Agent 模擬口試委員三路壓力測試，並將規格正式收斂回寫至 `PROJECT.md`。
+6. **多代理團隊與隔離防禦力**：完成符合最小權限與雙重 HITL 閘門之 `02_notes/research_team_blueprint.md`（通過 `team_blueprint_tool.py validate` 檢驗），並能於隔離上下文完成「檢索員 $\rightarrow$ 稽核員」實證交接。
