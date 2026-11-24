@@ -115,6 +115,9 @@ my_thesis_workspace/
 │   ├── research_gap_statement.md     # 第九章：學術空白與防禦報告
 │   └── research_team_blueprint.md    # 【本章產出】多代理團隊設計藍圖
 ├── 03_drafts/                        # 交接工件與正式章節草稿目錄
+├── .agents/                          # 【進階標準設定】Antigravity 客製化目錄
+│   ├── agents/                       # 宣告式 Subagent 定義檔 (*.md)
+│   └── rules/                        # 跨對話常駐團隊安全規則 (*.md)
 └── skills/
     └── research_team_orchestrator/   # 【本章新增】團隊協調與設計模組
         ├── SKILL.md
@@ -314,33 +317,81 @@ SciAgents 帶給本課程最大的啟發在於 **`Ontologist` 與 `Critic` 的�
 
 在這四份工件之間，我們刻意安插了兩道**強制人類暫停點（HITL Gates）**：第一道閘門位於大綱與證據包產出之後，確保撰稿方向與納入文獻群完全符合 PI 意圖；第二道閘門位於事實稽核報告產出之後，由 PI 親自決定哪些段落需要補檢索、哪些過度推論必須刪除，藉此確保人類始終掌握論文論證的主導權。
 
-### 3.3 Antigravity 2.0 實戰演進光譜：從藍圖派工到工作流自動化
+### 3.3 在 Antigravity 2.0 上設定與部署 Subagents 的標準方法
 
-設計好藍圖與交接契約後，在 Antigravity 2.0 Desktop 中究竟該如何實際驅動這支團隊？依據本課程「低程式門檻、高研究可控性」的教學定位，實務運作可由淺入深分為三個漸進層次，請同學依照任務規模與自身技術熟練度靈活選用：
+設計好藍圖與交接契約後，許多同學常會有一個關鍵疑問：**「在 Antigravity 上使用 Subagent，是不是只要在 `PROJECT.md`、對話 Prompt 或 `SKILL.md` 裡寫明『請使用 Subagent』就可以了？」**
 
-1. **核心實作層（課堂必學）：Markdown 藍圖 ＋ 主從子代理半自動派工（Blueprint + Coordinator/Subagents）**
-   這是最推薦研究生採用的日常寫作模式。我們先將完整的角色設定與交接規格寫入 `02_notes/research_team_blueprint.md`。實作時，同學在 Antigravity 2.0 的主對話視窗中，透過 `@` 引用藍圖與當前小節目標，指定主對話擔任「協調大綱總監（Coordinator）」。接著，協調代理會依序啟動獨立上下文的子代理（Subagents）來扮演實證檢索員、學術撰稿員與事實稽核員，每完成一個階段便依 HITL 閘門暫停，把產出的中介 Markdown 檔呈報給你審閱確認。這種作法**完全不需要撰寫任何 Python 非同步編排程式碼**，卻能享受到真正的上下文隔離與工作區自動化讀寫能力。
-2. **團隊規範固化層（進階推薦）：專案協調規則檔（`.agents/rules/` 或 `AGENTS.md`）**
-   當你發現團隊裡有幾條鐵律每次都要重複提醒（例如「所有代理禁止修改 `01_papers/` 目錄」「凡引用統計數據必附原文頁碼或 Chunk 錨點」），便可以善用 Antigravity 的規則檔機制，將這些不可妥協的紅線固化在工作區的 `.agents/rules/` 目錄下。以下為極簡規則設定範例，展示如何以純文字宣告保護原始文獻庫：
+答案是：**可以啟動，但那只是「臨時性的對話內動態派工」；若要做到跨對話持久化與硬性的工具權限隔離，必須採用 Antigravity 的「宣告式 Subagent 設定檔（`.agents/agents/*.md`）」。** 依據研究任務的嚴謹度與技術需求，實務部署可分為以下三個漸進層次：
+
+1. **層次一｜對話內動態派工（課堂必學入門）：Markdown 藍圖 ＋ `define_subagent` / `invoke_subagent`**
+   Antigravity 的主代理（Main Agent）本身內建 `define_subagent` 與 `invoke_subagent` 工具（以及內建的 `self`、`research`、`browser` 等子代理）。當同學將團隊規格寫入 `02_notes/research_team_blueprint.md`，並在主對話視窗透過 `@` 引用藍圖與當前小節目標時，主代理會擔任「協調大綱總監（Coordinator）」，在**當次對話**中動態定義並派發隔離上下文的子代理依序執行檢索、撰稿與稽核，並於 HITL 閘門暫停呈報。
+   - **優點與限制：** 完全不需額外撰寫設定檔即可獲得真正的「上下文隔離」，最適合課堂快速試跑；但缺點是 `define_subagent` 的定義**僅在當次對話有效**，且工具授權粒度較粗（例如無法從系統底層限制某子代理「只能讀檔、絕不能呼叫寫檔或執行終端指令」），若未寫明甚至可能直接複製 `self` 的完整權限，全靠提示詞自律防呆。
+
+2. **層次二｜正式標準設定（進階推薦）：宣告式自訂 Subagent（`.agents/agents/*.md`）＋ 專案規則檔（`.agents/rules/`）**
+   若希望把「實證檢索員」、「學術撰稿員」與「事實稽核員」固化為**每次開啟工作區都能自動載入、且從底層強制鎖定工具權限**的正式成員，就必須依據 Antigravity 的客製化探索機制進行檔案級設定：
+   - **宣告式 Subagent 檔案位置（依優先序探索）：**
+     - **專案工作區專用：** `<workspace>/.agents/agents/<agent-name>.md`（推薦！可隨研究專案版控共享）
+     - **全域個人專用：** `~/.gemini/config/agents/<agent-name>.md`（套用於本機所有工作區）
+     - **外掛封裝（Plugin）：** `<plugin-dir>/agents/<agent-name>.md`（適合將整套 `agents/`、`skills/`、`rules/AGENTS.md` 與 `mcp_config.json` 打包分享）
+   - **設定檔結構（YAML Frontmatter ＋ Markdown System Prompt）：**
+     每個 `.md` 檔案上半部透過 YAML Frontmatter 宣告身分、模型與工具白名單，下半部 Markdown 本文則直接編譯為該 Subagent 啟動時的系統提示詞（System Prompt）。關鍵欄位包含：
+     - `name`：唯一識別名稱（不可與內建 `self`、`research`、`browser` 撞名）。
+     - `description`：極為關鍵，Main Agent 會依據此描述判斷何時該透過 `invoke_subagent` 將任務委派給它。
+     - `subagent: true` 與 `mainAgent: false`：鎖定為專供主代理派工的子代理（若同時設為 `mainAgent: true`，也可於 CLI 或介面直接作為主對話角色啟動）。
+     - `tools`：**工具白名單**（最重要防線！未填寫時預設僅給精簡唯讀工具集；明確列出允許的工具名稱，就能從底層硬性剝奪寫檔或執行終端機的權限）。
+     - `model` / `skills` / `mcpServers` / `commandExecutionPolicy`：可為不同角色指定模型層級（如 `inherit`、`flash`、`pro`）、單獨掛載特定 Skill 或 MCP 伺服器，並限制指令沙盒策略（如 `sandbox`、`off`）。
+
+   以下示範如何在專案建立 `.agents/agents/fact-auditor.md`，從系統層強制鎖定事實稽核員「只讀寫指定範圍、絕不擅改草稿」的硬邊界：
+
+```markdown
+---
+name: fact-auditor
+description: >-
+  獨立上下文的事實稽核 Subagent。當 03_drafts/ 初稿或
+  _evidence_pack.md 完成後，用來逐句反查引用數據、作者
+  年份與本機原文錨點是否完全一致。
+subagent: true
+mainAgent: false
+model: inherit
+commandExecutionPolicy: off
+tools:
+  - read_file
+  - write_file
+  - call_mcp_tool
+---
+
+# 事實稽核員系統指令
+你是嚴格且客觀的學術事實稽核員（Fact Auditor）。
+1. 僅允許讀取 `03_drafts/`、`02_notes/` 並呼叫本機
+   `search_paper_chunks` 工具反查英文原文段落。
+2. 嚴禁修改任何 `01_papers/` 檔案或覆寫草稿正文；所有
+   稽核意見僅可寫入 `03_drafts/_audit_report.md`。
+3. 對每項實證主張逐一標註 `[通過]`、`[證據不足]`、
+   `[疑似錯引]` 或 `[推論過度]`，並附上原文比對依據。
+```
+
+   - **搭配專案協調規則檔（`.agents/rules/` 或 `AGENTS.md`）與 `SKILL.md` 形成完整契約：**
+     在 Antigravity 架構中，三者各司其職——**`.agents/agents/*.md`** 決定「Subagent 是誰、能用什麼工具」、**`.agents/rules/*.md`（或 `AGENTS.md`）** 固化跨對話常駐的安全紅線（如全域唯讀 `01_papers/`、強制頁碼錨點）、**`skills/*/SKILL.md`** 則負責教導 Main Agent 多步驟派工 SOP 與 HITL 暫停時機。以下為極簡 `.agents/rules/team_governance.md` 範例：
 
 ```markdown
 # 學術研究團隊全域安全紅線
 - 任何寫作與審查代理對 `01_papers/` 目錄僅具唯讀權限，嚴禁修改原文。
 - 所有實證主張與統計數據，必須能在 `03_drafts/_evidence_pack.md` 找到錨點。
-- 事實稽核代理必須在隔離新視窗中啟動，禁止沿用撰稿過程的對話歷史。
-
+- 事實稽核必須委派 `.agents/agents/fact-auditor.md` 在隔離上下文執行，禁止於撰稿原視窗自審。
 ```
 
-3. **工程視野延伸層（概念選型）：程式化動態工作流（Programmatic Workflow）**
-   當研究進入大規模批處理情境——例如你需要同時對 30 篇論文進行平行構面萃取，或建立自動化回歸測試管線——手動或半自動逐步確認就會顯得耗時。此時在工程上才適合進一步採用程式化工作流（如透過 Python 腳本呼叫 `parallel`、`pipeline` 與 JSON Schema 強制驗收結構化輸出）。為了協助同學判斷何時該用哪種模式，下表整理了三種實作層次的選型決策準則：
+3. **層次三｜工程視野延伸層（概念選型）：程式化動態工作流（`run_workflow`）與蜂群協作（`swarm`）**
+   當研究進入大規模批處理情境——例如你需要同時對 30 篇論文進行平行構面萃取，或建立固定 JSON Schema 自動化回歸驗收管線——手動或半自動逐步確認就會顯得耗時。此時可進一步採用 Antigravity 的程式化動態工作流 **`run_workflow`**（以 Python 腳本編排 `agent`、`parallel`、`pipeline` 並強制檢查輸出 Schema），或在多任務平行協作時運用 **`swarm`**（透過共享訊息板協調多位獨立 Worker 與驗證者）。
 
-| 實作層次 | 核心運作方式 | 最適合的學術任務場景 | 技術門檻與主要注意事項 |
-| :--- | :--- | :--- | :--- |
-| **藍圖＋主從子代理**<br>（半自動 HITL 模式） | 透過 `research_team_blueprint.md` 與主對話派工獨立 Subagent | 論文核心章節撰寫、學術空白辯護、高判斷力之概念綜整 | **門檻最低、透明度最高；** 須嚴格遵守 HITL 暫停點，避免一次派完所有步驟 |
-| **專案協調規則檔**<br>（`.agents/rules/`） | 以宣告式 Markdown 規則固化跨對話常駐之權限與引用紀律 | 跨週次、跨對話一致性的團隊紅線約束（如唯讀與引註要求） | **配置簡潔；** 規則應精煉明確，避免撰寫過長規則佔滿系統提示空間 |
-| **程式化動態工作流**<br>（如 `run_workflow`） | 以 Python 編排 `parallel`、`pipeline` 迴圈與 JSON Schema 驗證 | 批次掃描數十份檔案、多維度平行萃取與自動化格式回歸檢驗 | **門檻最高；** 須留意背景執行的配額消耗，且較不適合高主體性的論文起草 |
+為了協助同學判斷何時該選用哪種設定方式，下表整理了各層次的設定機制、權限控管力道與適用場景：
 
-從上表的對照可以清楚看出：對於學位論文撰寫這類「高批判深度、高主體性責任」的核心任務， **「藍圖＋主從子代理」加上「極簡專案規則檔」**才是兼顧品質、掌控感與學習負荷的黃金組合；而程式化工作流則作為面對大規模重複資料處理時的進階工程選項。
+| 實作層次 | 核心設定與運作方式 | 工具權限控管力道 | 最適合的學術任務場景 | 主要注意事項 |
+| :--- | :--- | :--- | :--- | :--- |
+| **層次一：對話內動態派工**<br>（入門試跑） | 靠 `research_team_blueprint.md` ＋ Prompt / `SKILL.md` 驅動主對話動態呼叫 `define_subagent` / `invoke_subagent` | **軟性約束**（依賴當次系統提示；未明確隔離時可能沿用 `self` 權限） | 單節初稿試跑、快速驗證雙代理上下文隔離效果 | 僅當次對話有效；須嚴守 HITL 閘門，勿一次派完 |
+| **層次二：宣告式 Subagent ＋ 規則檔**<br>（正式標準設定） | 建立 `.agents/agents/*.md` 定義固定角色與 `tools` 白名單，並以 `.agents/rules/` 或 `AGENTS.md` 固化跨對話紅線 | **硬性約束**（由系統載入白名單與沙盒策略，跨對話持久化） | 正式論文第二章寫作、長週期團隊協作與嚴格角色權限防呆 | `name` 勿與內建代理撞名；`description` 須寫清委派時機 |
+| **層次三：程式化工作流 / 蜂群**<br>（高階工程選型） | 以 `run_workflow`（Python `parallel`/`pipeline`）或 `swarm` 進行多代理自動化編排與 JSON Schema 驗證 | **程式級約束**（可逐一指定 `type_name`、`schema` 與 `workspace` 模式） | 批次掃描數十份文獻、多維度平行萃取與自動化格式回歸檢驗 | 技術門檻與配額消耗較高，較不適合高主體性論文起草 |
+
+從上表的對照可以清楚看出：在課堂入門階段，同學可先從**「藍圖＋對話內動態派工」**快速上手；一旦確定團隊分工並準備進入正式論文寫作，升級為**「`.agents/agents/*.md` 宣告式 Subagent ＋ `.agents/rules/` 規則固化 ＋ `SKILL.md` 流程控制」**，才是兼顧權限安全、可重現性與 PI 主導權的黃金標準配置。
 
 ### 3.4 本機團隊藍圖工具（`team_blueprint_tool.py`）架構與操作解析
 
@@ -372,7 +423,7 @@ python skills/research_team_orchestrator/scripts/team_blueprint_tool.py \
 >
 > 1. **盤點並初始化藍圖：** 於終端機依序執行 `check-inputs` 與 `init` 指令，產生 `02_notes/research_team_blueprint.md`，或直接請 Agent 讀取 `PROJECT.md` 協助客製化填寫四位角色邊界（標準寫作典範可參考 `skills/research_team_orchestrator/examples/sample_team_blueprint.md`）。
 > 2. **執行格式與治理驗證：** 執行 `validate` 指令，確認輸出 `[PASS] 格式合規！`。
-> 3. **啟動最小可行雙代理隔離測試（Pilot Run）：** 在 Antigravity 2.0 對話框中挑選你論文第二章的 **1 個小節主題**，發送以下派工指令：
+> 3. **啟動最小可行雙代理隔離測試（Pilot Run）：** 在 Antigravity 2.0 對話框中挑選你論文第二章的 **1 個小節主題**，發送以下派工指令（進階同學亦可先依 3.3 節於 `.agents/agents/` 建立 `evidence-retriever.md` 與 `fact-auditor.md` 設定檔後再執行試跑，比較動態派工與宣告式設定在權限鎖定上的差異）：
 >    > *「請讀取 `02_notes/research_team_blueprint.md` 與 `PROJECT.md`，擔任協調總監。請先派出一個獨立上下文的『實證檢索員 Subagent』，針對我第二章的小節主題呼叫 `search_paper_chunks` 整理 3 筆帶頁碼錨點的證據寫入 `03_drafts/_evidence_pack.md`，完成後暫停等我確認（HITL Gate 1）。待我確認後，再派出另一個完全隔離上下文的『事實稽核員 Subagent』獨立反查該證據包是否與原文完全一致！」*
 > 4. **觀察與記錄：** 觀察兩位子代理在獨立視窗中的回報內容，並在 `04_research_data/diaries/` 記錄：隔離前後的查證嚴謹度有何不同？
 
