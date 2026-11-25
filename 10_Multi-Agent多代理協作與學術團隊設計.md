@@ -82,7 +82,7 @@ puppeteer:
 
 > **多代理協作（Multi-Agent Collaboration）的真正價值，不在於「找一群 AI 互相聊天」，而在於透過「角色專責化、脈絡隔離（Context Isolation）與結構化工件交接（Structured Artifact Handoff）」，讓檢索、撰稿與事實稽核彼此制衡，而人類研究者始終握有研究團隊總主持人（Principal Investigator，PI）的最終裁決權。**
 
-在本章的課程中，我們將先解剖單一代理在高階學術寫作中的三重天花板，並建立多代理系統（Multi-Agent System，MAS）的四種經典協作拓撲模式；接著，我們將直接導讀本機文獻庫中多篇前沿科研多代理系統論文——包含 *SciAgents*、*The AI Scientist*、*Agent Laboratory*、*AI Co-Scientist* 與 *PaperOrchestra*——比較它們在全自動科研與人機共駕上的設計哲學；最後，我們將部署專案專屬的 `research_team_orchestrator` Skill 模組，學習如何在 Antigravity 2.0 中運用「團隊規格藍圖（Markdown Blueprint）＋ 主從子代理（Coordinator + Subagents）」建構屬於自己的四人學術研究團隊，為下一章「多代理對抗式同儕審查」奠定穩固的組織基礎。
+在本章的課程中，我們將先解剖單一代理在高階學術寫作中的三重天花板，並建立多代理系統（Multi-Agent System，MAS）的四種經典協作拓撲模式；接著，我們將直接導讀本機文獻庫中多篇前沿科研多代理系統論文——包含 *SciAgents*、*The AI Scientist*、*Agent Laboratory*、*AI Co-Scientist* 與 *PaperOrchestra*——比較它們在全自動科研與人機共駕上的設計哲學；最後，我們將部署專案專屬的 `research_team_orchestrator` Skill 模組，學習如何在 Antigravity 2.0 中運用「團隊規格藍圖 ＋ 宣告式 Subagents（`.agents/agents/*.md`）」建構屬於自己的四人學術研究團隊，並掌握 Antigravity 原生多代理模式（`/swarm`、`/teamwork`、`/boost`）的任務選型準則，為下一章「多代理對抗式同儕審查」奠定穩固的組織基礎。
 
 ---
 
@@ -380,20 +380,51 @@ tools:
 - 事實稽核必須委派 `.agents/agents/fact-auditor.md` 在隔離上下文執行，禁止於撰稿原視窗自審。
 ```
 
-3. **層次三｜工程視野延伸層（概念選型）：程式化動態工作流（`run_workflow`）與蜂群協作（`swarm`）**
-   當研究進入大規模批處理情境——例如你需要同時對 30 篇論文進行平行構面萃取，或建立固定 JSON Schema 自動化回歸驗收管線——手動或半自動逐步確認就會顯得耗時。此時可進一步採用 Antigravity 的程式化動態工作流 **`run_workflow`**（以 Python 腳本編排 `agent`、`parallel`、`pipeline` 並強制檢查輸出 Schema），或在多任務平行協作時運用 **`swarm`**（透過共享訊息板協調多位獨立 Worker 與驗證者）。
+3. **層次三｜程式化工作流延伸層（工程選型）：`run_workflow` 與動態管線編排**
+   當研究進入大規模批處理情境——例如你需要對 30 篇以上論文執行固定格式的平行萃取，或建立嚴格綁定 JSON Schema 的自動化回歸驗收管線——手動或半自動逐步確認就會顯得耗時。此時可進一步採用 Antigravity 的程式化動態工作流 **`run_workflow`**（以 Python 腳本編排 `agent`、`parallel`、`pipeline` 並強制檢查輸出結構），或者切換至下一節介紹的原生 Slash Command 多代理模式（`/swarm`、`/teamwork`、`/boost`）進行彈性調度。
 
-為了協助同學判斷何時該選用哪種設定方式，下表整理了各層次的設定機制、權限控管力道與適用場景：
+為了協助同學判斷何時該選用哪種 Subagent 設定層次，下表整理了各層次的設定機制、權限控管力道與適用場景：
 
 | 實作層次 | 核心設定與運作方式 | 工具權限控管力道 | 最適合的學術任務場景 | 主要注意事項 |
 | :--- | :--- | :--- | :--- | :--- |
 | **層次一：對話內動態派工**<br>（入門試跑） | 靠 `research_team_blueprint.md` ＋ Prompt / `SKILL.md` 驅動主對話動態呼叫 `define_subagent` / `invoke_subagent` | **軟性約束**（依賴當次系統提示；未明確隔離時可能沿用 `self` 權限） | 單節初稿試跑、快速驗證雙代理上下文隔離效果 | 僅當次對話有效；須嚴守 HITL 閘門，勿一次派完 |
 | **層次二：宣告式 Subagent ＋ 規則檔**<br>（正式標準設定） | 建立 `.agents/agents/*.md` 定義固定角色與 `tools` 白名單，並以 `.agents/rules/` 或 `AGENTS.md` 固化跨對話紅線 | **硬性約束**（由系統載入白名單與沙盒策略，跨對話持久化） | 正式論文第二章寫作、長週期團隊協作與嚴格角色權限防呆 | `name` 勿與內建代理撞名；`description` 須寫清委派時機 |
-| **層次三：程式化工作流 / 蜂群**<br>（高階工程選型） | 以 `run_workflow`（Python `parallel`/`pipeline`）或 `swarm` 進行多代理自動化編排與 JSON Schema 驗證 | **程式級約束**（可逐一指定 `type_name`、`schema` 與 `workspace` 模式） | 批次掃描數十份文獻、多維度平行萃取與自動化格式回歸檢驗 | 技術門檻與配額消耗較高，較不適合高主體性論文起草 |
+| **層次三：程式化動態工作流**<br>（高階工程選型） | 以 `run_workflow`（Python `parallel`/`pipeline`）進行多代理自動化編排與 JSON Schema 驗證 | **程式級約束**（可逐一指定 `type_name`、`schema` 與迴圈上限） | 批次掃描數十份文獻、多維度平行萃取與自動化格式回歸檢驗 | 需撰寫 Python 編排腳本，較不適合高主體性論文起草 |
 
 從上表的對照可以清楚看出：在課堂入門階段，同學可先從**「藍圖＋對話內動態派工」**快速上手；一旦確定團隊分工並準備進入正式論文寫作，升級為**「`.agents/agents/*.md` 宣告式 Subagent ＋ `.agents/rules/` 規則固化 ＋ `SKILL.md` 流程控制」**，才是兼顧權限安全、可重現性與 PI 主導權的黃金標準配置。
 
-### 3.4 本機團隊藍圖工具（`team_blueprint_tool.py`）架構與操作解析
+### 3.4 Antigravity 原生多代理模式選型：Subagent 與 `/swarm`、`/teamwork`、`/boost`
+
+除了由主代理私密派遣 **Subagent**（每個子代理完成任務後僅單線回報給主代理，彼此看不見對方）之外，Antigravity App 與 CLI 還內建了三種針對不同任務尺度與協作密度所設計的原生 Slash Command 多代理模式——**`/swarm`**、**`/teamwork`** 與 **`/boost`**。理解這三種模式的底層運作邏輯，能讓研究者在面對「平行取證」、「跨章長程整備」或「單點深水區卡關」時，精準切換最適合的戰術陣型：
+
+1. **`/swarm`（平行蜂群與共享訊息板模式｜分鐘～小時級）**
+   - **運作機制：** 在對話中輸入 `/swarm` 後，主對話會轉化為 **Coordinator（協調者）**，將可獨立拆分的任務派發給多位具名 **Worker**（例如 `rq1-retriever`、`rq2-retriever`、`rq3-retriever`），並可配置對抗式驗證者（`@verifier`）。與 Subagent 最大的不同在於，Swarm 成員會在一個**共享訊息板（Shared Message Board）**上透過 `@mention` 直接交棒與對話；閒置的 Worker 會進入休眠（`waiting`）且**不消耗 Token**，直到被 `@` 點名才喚醒執行。若多位 Worker 需同時修改不同檔案，協調者可設定 `workspace: "share"` 或 `"branch"` 給予各自獨立的工作複本避免衝突；Swarm UI 介面亦支援概覽面板追蹤進度與停滯監控。
+   - **對應學術場景：** 完美對應本節 1.3 的**「平行分片綜整（Parallel Fan-Out）」**拓撲——例如同時針對三個核心研究問題（RQ1–RQ3）平行召喚檢索 Worker 採集證據包、批次核對 20 餘張閱讀卡片與原文頁碼，或由不同 Worker 分頭整理各小節大綱後交由 `@verifier` 交叉比對。
+   - **治理提醒：** `/swarm` 屬於高平行度、**配額消耗較重（Quota Heavy）** 的預覽／進階協作模式；開工前必須明確切清每位 Worker 的寫入檔案邊界，絕不可讓兩位 Worker 同時改寫同一份 `.md` 草稿。
+
+2. **`/teamwork`（結構化里程碑團隊模式｜小時～跨日級）**
+   - **運作機制：** 專為大規模、跨多階段里程碑（Multi-Milestone）的長期工程或**高強度科學與學術研究**而設。啟動 `/teamwork` 時，系統會先進行簡短的**範疇訪談（Scoping Interview）**以對齊研究目標與驗收標準，接著自動拆解里程碑並在獨立目錄推進平行工作，同時內建嚴格的獨立把關角色群——包含檢查結構與規格一致性的 **Critic**、專找反例與邊界漏洞的 **Challenger**、逐項查驗實證避免偷懶造假的 **Auditor**，以及執行跨里程碑端到端驗收的 **Success Auditor**。
+   - **對應學術場景：** 適合跨越多天、需要嚴密階段驗收的大型研究整合任務，例如「依 `PROJECT.md` 統一盤整並重構跨章節名詞定義與文獻目錄結構」，或「分階段推進大型實證資料清理、統計分析到附錄產出」的長程專題。
+   - **治理與方案門檻：** 目前屬 Antigravity 付費方案（App / CLI）功能；由於 `/teamwork` 具備極高的跨里程碑自主推進能力，應用於學位論文時，人類 PI 仍必須在每個里程碑節點親自審閱驗收報告，不可放任跨日無人看管地代寫正文。
+
+3. **`/boost`（深層推理與反覆驗證管線模式｜秒～小時級）**
+   - **運作機制：** 與 `/swarm` 或 `/teamwork` 強調「廣度分片與平行人力」不同，`/boost` 是一套隨選的**深層推理與迭代修正管線**。啟動後，內部 Orchestrator 會調度 **DeepInvestigator（深度調查者）** 與 **DeepCoder（深度實作／修復者）** 等專責子角色，針對單一棘手難題展開「初步診斷／提案 $\rightarrow$ 多輪反證挑戰與精修 $\rightarrow$ 獨立驗證」的集中火力攻堅。
+   - **對應學術場景：** 最適合卡在**「局部但極度複雜的單點瓶頸」**——例如：本機 RAG 檢索腳本或 BERTopic 聚類管線出現難以追蹤的邏輯臭蟲（Bug）、實驗統計分析程式發生細微計算偏差，或是論文中某一個高難度的理論張力論證反覆寫不好、需要深度溯源與反例推演的關鍵段落。
+   - **治理與方案門檻：** 同樣屬 Antigravity 付費方案（App / CLI）功能；切忌拿 `/boost` 來做「從頭撰寫整章文獻探討」這類廣度發散工作，應把它當成外科手術式的「疑難排解特種部隊」。
+
+為了協助同學在研究實戰中一眼挑對工具，下表彙整了本課程標準 Subagent 架構與三大原生模式的橫向選型比較：
+
+| 協作模式 | 觸發方式與方案門檻 | 核心通訊與隔離機制 | 適用任務尺度與時間 | 內建把關 / 角色特色 | 論文研究最佳適用場景 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Subagent**<br>（`.agents/agents/*.md`） | 主對話透過 `invoke_subagent` 委派<br>（全方案通用） | **點對點私密回報**（各自獨立上下文，彼此不見對話） | 單一步驟或單一小節<br>（數分鐘） | 由使用者在藍圖與 `.agents/agents/*.md` 自行鎖定唯讀白名單 | **本課程日常核心：** 單節證據檢索、嚴格遵守 HITL 閘門的初稿撰寫與事實稽核 |
+| **`/swarm`** | 輸入 `/swarm` 啟動<br>（App / CLI；高配額消耗） | **共享訊息板 `@mention`** ＋ 可選獨立工作區複本（`share` / `branch`） | 多檔案、多 RQ 平行作業<br>（數分鐘～數小時） | 具名平行 Workers ＋ `@verifier` 交叉檢查 ＋ UI 看板追蹤 | 同時針對 RQ1–RQ3 平行取證、批次核對數十張閱讀卡片、多小節平行互審 |
+| **`/teamwork`** | 輸入 `/teamwork` 啟動<br>（App / CLI 付費方案） | **範疇訪談 ＋ 里程碑拆解** ＋ 獨立目錄協作 | 跨多章、長程整合工程<br>（數小時～數天） | 內建 **Critic**、**Challenger**、**Auditor**、**Success Auditor** 四重把關 | 跨章節知識庫大重整、多週實證實驗管線與多階段專題整合 |
+| **`/boost`** | 輸入 `/boost` 啟動<br>（App / CLI 付費方案） | **深層推理管線**（診斷 $\rightarrow$ 多輪挑戰精修 $\rightarrow$ 獨立驗證） | 單一高難度局部瓶頸<br>（數秒～數小時） | Orchestrator ＋ **DeepInvestigator** / **DeepCoder** 集中攻堅 | 本機 RAG / 統計分析程式難解 Bug 除錯、單一棘手理論悖論之深度推演 |
+
+> **一句話選型口訣（Mapping to Your Thesis）：**
+> 日常穩健寫作與 HITL 把關用 **Subagent（`.agents/agents/*.md`）**；需要同時平行查多條 RQ 或多份檔案用 **`/swarm`**；跨越多日的多里程碑大型重構研究用 **`/teamwork`**；遇到單一難解程式 Bug 或高密度邏輯卡關就開 **`/boost`**！
+
+### 3.5 本機團隊藍圖工具（`team_blueprint_tool.py`）架構與操作解析
 
 為了確保同學親手設計的團隊藍圖不會遺漏「角色禁區」、「上下文隔離」與「人類審查閘門」等關鍵要素，本週新增的 `skills/research_team_orchestrator/` 模組配備了一支輕量化的本機輔助驗證工具：
 
@@ -416,16 +447,19 @@ python skills/research_team_orchestrator/scripts/team_blueprint_tool.py \
 
 ```
 
-### 3.5 課堂實作小活動：組建個人研究團隊藍圖並執行雙代理最小可行交接
+### 3.6 課堂實作小活動：組建個人研究團隊藍圖並執行雙代理最小可行交接
 
-> **活動時間：** 20 分鐘
-> **活動任務：** 運用 `research-team-orchestrator` Skill 建立個人論文團隊藍圖，並在 Antigravity 2.0 中完成一次最小可行的「檢索員 $\rightarrow$ 隔離稽核員」雙代理交接試跑。
+> **活動時間：** 25 分鐘
+> **活動目標：** 運用 `research-team-orchestrator` Skill 建立個人論文團隊藍圖，並在 Antigravity 2.0 中完成一次最小可行的「檢索員 $\rightarrow$ 隔離稽核員」雙代理交接試跑，同時練習 Antigravity 多代理模式選型。
 >
 > 1. **盤點並初始化藍圖：** 於終端機依序執行 `check-inputs` 與 `init` 指令，產生 `02_notes/research_team_blueprint.md`，或直接請 Agent 讀取 `PROJECT.md` 協助客製化填寫四位角色邊界（標準寫作典範可參考 `skills/research_team_orchestrator/examples/sample_team_blueprint.md`）。
 > 2. **執行格式與治理驗證：** 執行 `validate` 指令，確認輸出 `[PASS] 格式合規！`。
 > 3. **啟動最小可行雙代理隔離測試（Pilot Run）：** 在 Antigravity 2.0 對話框中挑選你論文第二章的 **1 個小節主題**，發送以下派工指令（進階同學亦可先依 3.3 節於 `.agents/agents/` 建立 `evidence-retriever.md` 與 `fact-auditor.md` 設定檔後再執行試跑，比較動態派工與宣告式設定在權限鎖定上的差異）：
 >    > *「請讀取 `02_notes/research_team_blueprint.md` 與 `PROJECT.md`，擔任協調總監。請先派出一個獨立上下文的『實證檢索員 Subagent』，針對我第二章的小節主題呼叫 `search_paper_chunks` 整理 3 筆帶頁碼錨點的證據寫入 `03_drafts/_evidence_pack.md`，完成後暫停等我確認（HITL Gate 1）。待我確認後，再派出另一個完全隔離上下文的『事實稽核員 Subagent』獨立反查該證據包是否與原文完全一致！」*
-> 4. **觀察與記錄：** 觀察兩位子代理在獨立視窗中的回報內容，並在 `04_research_data/diaries/` 記錄：隔離前後的查證嚴謹度有何不同？
+> 4. **觀察與模式選型思考：** 觀察兩位子代理在獨立視窗中的回報內容並記錄於 `04_research_data/diaries/`；接著對照 3.4 節選型表思考以下三個情境分別應切換為哪種模式（`Subagent`、`/swarm`、`/teamwork` 或 `/boost`）：
+>    - （A）想同時把 RQ1、RQ2、RQ3 的 30 篇卡片證據一次分頭抽檢完畢；
+>    - （B）本機 `rag_search.py` 的向量相似度計算出現未知 NaN 錯誤，需要深度除錯；
+>    - （C）規劃跨週重整第一章至第三章的全部術語對照與架構一致性。
 
 ```text
 老師的提醒：
@@ -446,7 +480,7 @@ python skills/research_team_orchestrator/scripts/team_blueprint_tool.py \
 
 在本章（第十講）中，我們正式跨越了單一對話視窗的能力邊界，進入了 **Multi-Agent 多代理協作與學術團隊設計** 的全新視野。我們從實務寫作痛點出發，剖析了單代理在長程任務中遭遇上下文稀釋、工具注意力競爭與同源確認偏誤的三重天花板；接著掌握了順序流水線、協調者派工、平行分片綜整與對抗辯論四大協作拓撲，並透過導讀 *SciAgents*、*The AI Scientist*、*Agent Laboratory*、*AI Co-Scientist* 與 *PaperOrchestra* 五套前沿科研系統，釐清了「全自動代勞」與「PI 主導人機共駕」的學術倫理邊界。
 
-在實作層面，我們部署了專屬的 `research_team_orchestrator` Skill 與 `team_blueprint_tool.py` 驗證工具，為個人論文工作區設計出包含協調大綱總監、實證檢索員、學術撰稿員與事實稽核員的四代理團隊藍圖（`02_notes/research_team_blueprint.md`），並透過結構化 Markdown 工件交接與雙重 HITL 人類審查閘門，將抽象的多代理概念轉化為非資工背景研究者也能穩健駕馭的日常工作流。
+在實作層面，我們部署了專屬的 `research_team_orchestrator` Skill 與 `team_blueprint_tool.py` 驗證工具，為個人論文工作區設計出包含協調大綱總監、實證檢索員、學術撰稿員與事實稽核員的四代理團隊藍圖（`02_notes/research_team_blueprint.md`），並掌握了從宣告式 Subagent（`.agents/agents/*.md`）到 Antigravity 原生模式（`/swarm`、`/teamwork`、`/boost`）的任務選型準則，透過結構化 Markdown 工件交接與雙重 HITL 人類審查閘門，將抽象的多代理概念轉化為非資工背景研究者也能穩健駕馭的日常工作流。
 
 在下一章（第十一章《多代理對抗式同儕審查與研究初稿合成》）中，我們將把本章組建好的研究團隊正式投入實戰戰場！我們將驅動這個多代理團隊與 `03_drafts/` 目錄連動，讓檢索員、撰稿員與多位不同視角的方法學審稿代理展開多輪對抗式質詢與修訂循環，並建立嚴格的 AI 協作揭露規範與防錯誤累積治理機制，最終合成具備嚴謹事實錨定、準備好迎接指導教授與口試委員檢驗的學位論文正式草稿章節。
 
