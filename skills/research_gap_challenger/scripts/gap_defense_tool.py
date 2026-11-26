@@ -10,7 +10,7 @@
 用法：
   python skills/research_gap_challenger/scripts/gap_defense_tool.py audit
   python skills/research_gap_challenger/scripts/gap_defense_tool.py validate 02_notes/research_gap_statement.md
-  python skills/research_gap_challenger/scripts/gap_defense_tool.py archive-project --version v0.3
+  python skills/research_gap_challenger/scripts/gap_defense_tool.py archive-project --version v0.1
 """
 
 import os
@@ -121,7 +121,7 @@ def cmd_archive_project(args):
     print("[成功] 專案規格書歷史版本歸檔完成！")
     print(f"   * 來源檔案 : {proj_path.relative_to(root)}")
     print(f"   * 歸檔路徑 : {target_file.relative_to(root)}")
-    print("[指引] 現在可安全將收斂後之 Research Gap 與定錨版 RQ1-RQ3 寫入根目錄 PROJECT.md (v0.4)。")
+    print("[指引] 現在可安全將收斂後之 Research Gap 與定錨版 RQ1-RQ3 寫入根目錄 PROJECT.md (v1.0)。")
     print("==================================================================")
     return 0
 
@@ -197,7 +197,7 @@ def main():
     subparsers.add_parser("audit", help="審計 literature_matrix.md 與 PROJECT.md 之研究空白線索")
 
     arch_parser = subparsers.add_parser("archive-project", help="將現有 PROJECT.md 備份歸檔至 05_project_history/")
-    arch_parser.add_argument("--version", default="v0.3", help="欲歸檔之舊版版本號 (預設: v0.3)")
+    arch_parser.add_argument("--version", default="v0.1", help="欲歸檔之舊版版本號 (預設: v0.1)")
 
     val_parser = subparsers.add_parser("validate", help="驗證 research_gap_statement.md 是否符合標準 Schema")
     val_parser.add_argument("report_path", nargs="?", default="02_notes/research_gap_statement.md", help="報告檔案路徑")

@@ -63,7 +63,7 @@ skills/multi_agent_peer_reviewer/
 啟動本 Skill 後，請按順序執行以下六個步驟：
 
 ### 第一步：盤點前置藍圖、證據包與待審草稿（Pre-Review & Synthesis Check）
-1. 確認第十章產出之 `02_notes/research_team_blueprint.md` 與 `03_drafts/_evidence_pack.md` 已就位；若尚未建立正式草稿，先依 `PROJECT.md (v0.4)`、`02_notes/literature_matrix.md` 與 `02_notes/research_gap_statement.md` 執行「證據包驅動合成」，產出 `03_drafts/01_introduction_draft.md` 或 `03_drafts/02_literature_review_draft.md`（每項實證主張須附帶 `[EV-XX]` 與 APA 引註）。
+1. 確認第十章產出之 `02_notes/research_team_blueprint.md` 與 `03_drafts/_evidence_pack.md` 已就位；若尚未建立正式草稿，先依 `PROJECT.md (v1.0)`、`02_notes/literature_matrix.md` 與 `02_notes/research_gap_statement.md` 執行「證據包驅動合成」，產出 `03_drafts/01_introduction_draft.md` 或 `03_drafts/02_literature_review_draft.md`（每項實證主張須附帶 `[EV-XX]` 與 APA 引註）。
 2. 執行 `@Script(scripts/draft_audit_tool.py)` 掃描待審草稿的引註與證據標記覆蓋狀況：
    ```bash
    python skills/multi_agent_peer_reviewer/scripts/draft_audit_tool.py scan-draft 03_drafts/02_literature_review_draft.md

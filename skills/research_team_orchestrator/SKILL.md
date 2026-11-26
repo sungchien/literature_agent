@@ -24,7 +24,7 @@ tags:
 
 ## Skill 目的
 
-本 Skill 承接第九章已定錨的 `PROJECT.md`（v0.4）、`02_notes/literature_matrix.md` 與 `02_notes/research_gap_statement.md`，協助研究者從「單一對話視窗單兵作戰」升級為「人類總主持人（Principal Investigator，PI）主導的多代理研究團隊」。
+本 Skill 承接第九章已定錨的 `PROJECT.md`（v1.0）、`02_notes/literature_matrix.md` 與 `02_notes/research_gap_statement.md`，協助研究者從「單一對話視窗單兵作戰」升級為「人類總主持人（Principal Investigator，PI）主導的多代理研究團隊」。
 
 透過強制性的**角色專責化（Role Specialization）**、**上下文隔離（Context Isolation）**、**最小權限工具綁定（Least-Privilege Tool Binding）**與**結構化工件交接契約（Structured Artifact Handoff）**，本 Skill 產出儲存於 `02_notes/research_team_blueprint.md` 的團隊設計藍圖，讓檢索、撰稿與事實稽核各自獨立運作並彼此制衡，為第十一章的「多代理對抗式同儕審查」與 `03_drafts/` 章節起草建立安全可控的協作基礎。
 

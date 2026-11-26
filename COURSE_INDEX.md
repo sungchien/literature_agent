@@ -12,8 +12,8 @@
 
 | 章節 | 講義檔案連結 | 核心內容摘要（約 50 字） | 關鍵工具與技術 | 核心產出資產 |
 | :--- | :--- | :--- | :--- | :--- |
-| **第零章** | [00_課前環境建置與虛擬環境配置.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/00_課前環境建置與虛擬環境配置.md) | 介紹 Anaconda、VS Code 與 Antigravity 協同架構，引導指揮 AI Agent 自主部署 `thesis_env` 集中式虛擬環境、安裝核心學術套件並配置跨檔案環境變數與快捷指令，奠定研究數位基建。 | Anaconda, Python 3.13, PowerShell Profile, VS Code Settings | `thesis_env`, `settings.json`, `mcp_config.json` |
-| **第一章** | [01_課程介紹.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/01_課程介紹.md) | 剖析 Chatbot 被動問答與 AI Agent（ReAct 動態迴圈）之本質差異，確立五大標準工作區目錄，並透過上下文工程撰寫 `PROJECT.md` 注入研究人設、時程約束與探索性研究問題。 | Antigravity 2.0, ReAct Loop, Context Engineering | [PROJECT.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/PROJECT.md), 五大工作目錄 |
+| **第零章** | [00_課前環境建置與虛擬環境配置.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/00_課前環境建置與虛擬環境配置.md) | 介紹 Anaconda、VS Code 與 Antigravity 協同架構，預置 `AGENTS.md` 與 `.agents/rules/` 規則基建，並引導指揮 AI Agent 部署 `thesis_env`、安裝套件與配置環境變數。 | Anaconda, Python 3.13, `AGENTS.md`, `.agents/rules/` | `thesis_env`, `AGENTS.md`, `.agents/rules/` |
+| **第一章** | [01_課程介紹.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/01_課程介紹.md) | 剖析 Chatbot 被動問答與 AI Agent（ReAct 動態迴圈）之本質差異，確立五大標準工作區目錄，並搭配預置規則撰寫精簡版 `PROJECT.md` 注入研究題目、時程與探索性 RQs。 | Antigravity 2.0, ReAct Loop, Context Engineering | [PROJECT.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/PROJECT.md), 五大工作目錄 |
 | **第二章** | [02_智慧文獻爬梳與學術文字工程.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/02_智慧文獻爬梳與學術文字工程.md) | 基於 OpenAlex API 打造自動化文獻檢索管線，結合期刊品質過濾、PRISMA 規範兩位數流水號追蹤與三態人機互動審查，並透過 MCP 協定將腳本封裝為 Agent 自主調用工具鏈。 | OpenAlex API, PRISMA, Model Context Protocol (MCP) | `candidate_papers_01.md`, `candidate_papers_01_tracking.md` |
 | **第三章** | [03_外部自尋文獻匯入與學術元數據治理.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/03_外部自尋文獻匯入與學術元數據治理.md) | 建立 `01_papers/inbox/` 收件隔離機制，利用 PyMuPDF 探測 PDF 首頁與 DOI，並透過 CrossRef API 逆向解析元數據、自動正規化命名與去重，為非結構化外部文獻建立權威身分證。 | PyMuPDF, CrossRef API, DOI Regex, Metadata Ingestion | `01_papers/inbox/`, `external_papers_catalog.md` |
 | **第四章** | [04_學術文字工程_從PDF排版詛咒到純淨Markdown.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/04_學術文字工程_從PDF排版詛咒到純淨Markdown.md) | 破解 PDF 雙欄混排與繪圖指令詛咒，運用 `pymupdf4llm` 轉譯純淨 Markdown，結合正規表達式精準截斷參考文獻雜訊與清洗頁眉頁腳，為本機向量索引庫打造高密度語意文本。 | PyMuPDF, pymupdf4llm, Regex Boundary Detection | `01_papers/extracted_text/*.md` |
@@ -43,10 +43,15 @@
 - [09_學術空白鎖定與開題立論防禦.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/09_學術空白鎖定與開題立論防禦.md)：真偽學術空白鑑別、CARS 四步修辭公式與口試極限對抗壓力測試。
 - [10_Multi-Agent多代理協作與學術團隊設計.md](file:///c:/Users/Leo/Documents/GitHub/literature_agent/10_Multi-Agent多代理協作與學術團隊設計.md)：單代理極限診斷、四大協作拓撲、科研系統典範導讀與 PI 主導四代理團隊藍圖設計。
 
-### 2. 研究規格書與歷史演進 (Project Specs & History)
-- [PROJECT.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/PROJECT.md)：現行專案主規格書（當前為 v0.3 本機 RAG 向量檢索與雙語鷹架治理版）。
-- [PROJECT_v0.1.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/05_project_history/PROJECT_v0.1.md)：第一週產出之概念孵化版歷史存檔。
-- [PROJECT_v0.2.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/05_project_history/PROJECT_v0.2.md)：第二週產出之智慧文獻管線與工具治理版歷史存檔。
+### 2. 研究規格書、代理規則與歷史演進 (Project Specs, Rules & History)
+- [AGENTS.md](AGENTS.md)：課前預置全域代理鐵律（啟動必讀 `PROJECT.md`、`01_papers/` 唯讀保護、防幻覺底線）。
+- [.agents/rules/01_fact_grounding_and_bilingual.md](.agents/rules/01_fact_grounding_and_bilingual.md)：常駐規則——雙語學術檢索轉譯協定與嚴格事實錨定紀律。
+- [.agents/rules/02_literature_workflow_mcp.md](.agents/rules/02_literature_workflow_mcp.md)：條件規則——`literature-workflow` MCP 工具強制調用、PRISMA 追蹤與 HITL 暫停點。
+- [.agents/rules/03_multi_agent_governance.md](.agents/rules/03_multi_agent_governance.md)：條件規則——多代理初稿合成證據包、審查上下文隔離與有界收斂規範。
+- [PROJECT.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/PROJECT.md)：現行精簡版學生研究主規格書（當前為 `v0.1 概念探索與檢索規格版`，含研究主題、時程、RQs 與檢索納排標準）。
+- [PROJECT_v0.1.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/05_project_history/PROJECT_v0.1.md)：早期完整架構版歷史存檔。
+- [PROJECT_v0.2.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/05_project_history/PROJECT_v0.2.md)：早期智慧文獻管線與工具治理版歷史存檔。
+- [PROJECT_v0.3.md](05_project_history/PROJECT_v0.3.md)：拆分為 `AGENTS.md` / `.agents/rules/` 前之完整 RAG 與雙語鷹架治理版歷史存檔。
 
 ### 3. 文獻採集、追蹤與轉譯文字庫 (Papers & Extraction)
 - [candidate_papers.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/01_papers/candidate_papers.md)：文獻庫候選總表存檔。
@@ -137,7 +142,7 @@ flowchart LR
 
 6. **階段五：終局立論：學術空白鎖定與口試極限防禦閉環（收斂精讀第九章）**
    - **必讀講義**：[09_學術空白鎖定與開題立論防禦.md](file:///c:/Users/vvkuo/Documents/GitHub/literature_agent/09_學術空白鎖定與開題立論防禦.md)
-   - **學習目的**：運用問題化理論識別四大真學術空白，使用 Swales CARS 模型四步公式起草中英雙語 Gap Statement，正面迎戰 Agent 口試委員發動的三路極限壓力測試，將收斂定稿之研究問題回寫升級為 `PROJECT.md (v0.4)`。
+   - **學習目的**：運用問題化理論識別四大真學術空白，使用 Swales CARS 模型四步公式起草中英雙語 Gap Statement，正面迎戰 Agent 口試委員發動的三路極限壓力測試，將收斂定稿之研究問題回寫升級為 `PROJECT.md (v1.0)`。
    - **完成里程碑**：碩士學位論文計畫書第一章（緒論）與第二章（文獻探討）完成實證錨定，正式達成開題準備閉環。
 
 7. **階段六：團隊協作：Multi-Agent 學術研究團隊設計與交接治理（研讀第十章）**
@@ -189,7 +194,7 @@ flowchart LR
     subgraph S5["【階段五】概念矩陣與立論防禦"]
         direction TB
         C08["<b>第八章：跨篇文獻矩陣共構</b><br/>• Webster & Watson 概念矩陣<br/>• 異質文類橫向對齊法則<br/>• 提煉共識、爭端與微差<br/>• 產出 literature_matrix.md"]
-        C09["<b>第九章：空白鎖定與口試防禦</b><br/>• Sandberg & Alvesson 問題化<br/>• 破除「過去沒人做」偽空白<br/>• Swales CARS 四步修辭公式<br/>• Agent 口試委員三路極限質詢<br/>• 閉環升級 PROJECT.md (v0.4)"]
+        C09["<b>第九章：空白鎖定與口試防禦</b><br/>• Sandberg & Alvesson 問題化<br/>• 破除「過去沒人做」偽空白<br/>• Swales CARS 四步修辭公式<br/>• Agent 口試委員三路極限質詢<br/>• 閉環升級 PROJECT.md (v1.0)"]
         C08 --> C09
     end
 

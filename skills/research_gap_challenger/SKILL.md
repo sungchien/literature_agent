@@ -6,7 +6,7 @@ description: >
   鎖定具備學術合法性的「研究空白（Research Gap）」、破除「過去沒人做過」的偽空白陷阱、
   運用 Swales (1990, 2004) CARS 模型撰寫四步修辭轉折陳述句（Gap Statement）、
   進行模擬學位口試委員的對抗性壓力測試（Adversarial Oral Defense），
-  並最終迭代收斂根目錄 PROJECT.md 的研究問題（升級至 v0.4 開題定錨版）時，請使用本 Skill。
+  並最終迭代收斂根目錄 PROJECT.md 的研究問題（升級至 v1.0 開題定錨版）時，請使用本 Skill。
 
 version: "1.0"
 
@@ -28,7 +28,7 @@ tags:
 
 本 Skill 旨在協助研究者完成從「文獻綜整（Literature Synthesis）」邁向「開題立論（Problem Formulation & Niche Establishment）」的關鍵一躍。許多研究生在完成文獻矩陣後，仍習慣以「過去很少有人研究 X 對 Y 的影響」這種極易被口試委員擊潰的「偽空白（Spurious Gap）」作為研究動機。
 
-本 Skill 深度融合 **Swales (1990, 2004) CARS 模型（Create a Research Space）**、**Sandberg & Alvesson (2011) 缺口鎖定與問題化理論（Gap-Spotting & Problematization）** 以及 **Robinson et al. (2011) 系統性研究缺口分類框架**，引導研究者從 `02_notes/literature_matrix.md` 的結構性矛盾中提煉真正的學術空白，撰寫符合國際期刊規範的 **四步修辭轉折陳述句（Gap Statement）**，接著由 Agent 化身最嚴厲的學位口試委員結合本機 RAG（`search_paper_chunks`）發動三路極限壓力測試，最終將淬鍊成熟的立論與研究問題（RQ1–RQ3）正式回寫收斂至根目錄 `PROJECT.md (v0.4 開題定錨版)`。
+本 Skill 深度融合 **Swales (1990, 2004) CARS 模型（Create a Research Space）**、**Sandberg & Alvesson (2011) 缺口鎖定與問題化理論（Gap-Spotting & Problematization）** 以及 **Robinson et al. (2011) 系統性研究缺口分類框架**，引導研究者從 `02_notes/literature_matrix.md` 的結構性矛盾中提煉真正的學術空白，撰寫符合國際期刊規範的 **四步修辭轉折陳述句（Gap Statement）**，接著由 Agent 化身最嚴厲的學位口試委員結合本機 RAG（`search_paper_chunks`）發動三路極限壓力測試，最終將淬鍊成熟的立論與研究問題（RQ1–RQ3）正式回寫收斂至根目錄 `PROJECT.md (v1.0 開題定錨版)`。
 
 ---
 
@@ -99,12 +99,12 @@ skills/research_gap_challenger/
 ### 第五步：產出結構化立論防禦報告（Persistence to `02_notes/research_gap_statement.md`）
 遵循 `@Resource(resources/gap_statement_template.md)` 與 `@Example(examples/sample_gap_statement.md)` 規範，將完整的空白型態診斷表、CARS 四步陳述句（初稿與終極修訂版）、三問三答口試防禦實錄、以及從「探索性 RQ」演進至「定錨版 RQ」的對照表，寫入 `02_notes/research_gap_statement.md`。
 
-### 第六步：專案規格書歸檔與升級（`PROJECT.md` v0.4 Convergence & Validation）
-1. 執行 `@Script(scripts/gap_defense_tool.py)` 的 `archive-project` 子命令，將根目錄現有的 `PROJECT.md (v0.3)` 安全備份至 `05_project_history/PROJECT_v0.3.md`：
+### 第六步：專案規格書歸檔與升級（`PROJECT.md` v1.0 Convergence & Validation）
+1. 執行 `@Script(scripts/gap_defense_tool.py)` 的 `archive-project` 子命令，將根目錄現有的 `PROJECT.md (v0.1)` 安全備份至 `05_project_history/PROJECT_v0.1.md`：
    ```bash
-   python skills/research_gap_challenger/scripts/gap_defense_tool.py archive-project --version v0.3
+   python skills/research_gap_challenger/scripts/gap_defense_tool.py archive-project --version v0.1
    ```
-2. 將根目錄的 `PROJECT.md` 升級為 **`v0.4 學術空白鎖定與開題定錨版`**，新增或更新「核心學術空白陳述（Research Gap Statement）」與「收斂定錨後之研究問題（Refined RQs）」。
+2. 將根目錄的 `PROJECT.md` 升級為 **`v1.0 學術空白鎖定與開題定錨版`**，新增或更新「核心學術空白陳述（Research Gap Statement）」與「收斂定錨後之研究問題（Refined RQs）」。
 3. 執行 `validate` 子命令驗證 `02_notes/research_gap_statement.md` 格式合規性：
    ```bash
    python skills/research_gap_challenger/scripts/gap_defense_tool.py validate 02_notes/research_gap_statement.md

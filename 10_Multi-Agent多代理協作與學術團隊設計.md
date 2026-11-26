@@ -106,7 +106,8 @@ puppeteer:
 ```text
 my_thesis_workspace/
 │
-├── PROJECT.md                        # v0.4 開題定錨版研究規格書
+├── AGENTS.md                         # 【課前預置】全域代理鐵律
+├── PROJECT.md                        # v1.0 開題定錨版研究規格書
 ├── 01_papers/
 │   └── vector_index.json             # 第五章：本機 RAG 向量索引
 ├── 02_notes/
@@ -115,9 +116,9 @@ my_thesis_workspace/
 │   ├── research_gap_statement.md     # 第九章：學術空白與防禦報告
 │   └── research_team_blueprint.md    # 【本章產出】多代理團隊設計藍圖
 ├── 03_drafts/                        # 交接工件與正式章節草稿目錄
-├── .agents/                          # 【進階標準設定】Antigravity 客製化目錄
+├── .agents/                          # 【標準設定】Antigravity 客製化目錄
 │   ├── agents/                       # 宣告式 Subagent 定義檔 (*.md)
-│   └── rules/                        # 跨對話常駐團隊安全規則 (*.md)
+│   └── rules/                        # 課前預置規範與團隊安全規則 (*.md)
 └── skills/
     └── research_team_orchestrator/   # 【本章新增】團隊協調與設計模組
         ├── SKILL.md
@@ -371,7 +372,7 @@ tools:
 ```
 
    - **搭配專案協調規則檔（`.agents/rules/` 或 `AGENTS.md`）與 `SKILL.md` 形成完整契約：**
-     在 Antigravity 架構中，三者各司其職——**`.agents/agents/*.md`** 決定「Subagent 是誰、能用什麼工具」、**`.agents/rules/*.md`（或 `AGENTS.md`）** 固化跨對話常駐的安全紅線（如全域唯讀 `01_papers/`、強制頁碼錨點）、**`skills/*/SKILL.md`** 則負責教導 Main Agent 多步驟派工 SOP 與 HITL 暫停時機。以下為極簡 `.agents/rules/team_governance.md` 範例：
+     在 Antigravity 架構中，三者各司其職——**`.agents/agents/*.md`** 決定「Subagent 是誰、能用什麼工具」、**`.agents/rules/*.md`（與根目錄 `AGENTS.md`）** 固化跨對話常駐的安全紅線（本課程已於課前預置 `AGENTS.md` 與 `01`–`03` 三份基礎規則，其中 `03_multi_agent_governance.md` 已涵蓋團隊隔離與止損底線）、**`skills/*/SKILL.md`** 則負責教導 Main Agent 多步驟派工 SOP 與 HITL 暫停時機。以下展示如何在預置規則之上，依個人團隊需求補充 `.agents/rules/team_governance.md`：
 
 ```markdown
 # 學術研究團隊全域安全紅線

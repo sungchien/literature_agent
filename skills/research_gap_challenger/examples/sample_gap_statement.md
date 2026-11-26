@@ -8,7 +8,7 @@ gap_types:
   - Methodological_System_Gap
   - Theoretical_Tension_Gap
   - Ecological_Validity_Gap
-target_project_version: "v0.4"
+target_project_version: "v1.0"
 created_date: 2026-11-03
 ---
 

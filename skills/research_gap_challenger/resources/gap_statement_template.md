@@ -4,7 +4,7 @@ gap_version: 1.0
 project_title: "{論文工作題目}"
 source_matrix: "02_notes/literature_matrix.md"
 gap_types: [{Population_Context_Gap}, {Methodological_System_Gap}, {Theoretical_Tension_Gap}, {Ecological_Validity_Gap}]
-target_project_version: "v0.4"
+target_project_version: "v1.0"
 created_date: {YYYY-MM-DD}
 ---
 
